@@ -243,11 +243,11 @@ void Magnificator::laplaceMagnify() {
             }
         }
 
-        // Motion is nothing at this point
+        // Motion is nothing up until this point
         /* 4. RECONSTRUCT MOTION IMAGE FROM PYRAMID */
         buildImgFromLaplacePyr(motionPyramid, levels, motion);
 
-        // Now motion becomes something.
+
 
         /* 5. ATTENUATE (if not grayscale) */
         attenuate(motion, motion);
@@ -272,8 +272,8 @@ void Magnificator::laplaceMagnify() {
 
         /* 6. ADD MOTION TO ORIGINAL IMAGE */
         if(currentFrame > 0) {
-            output = input+motion; // used in original
-//             output = motion;
+//            output = input+motion; // used in original
+             output = motion;
 //            output = hsvimg;
         }
         else
@@ -292,6 +292,7 @@ void Magnificator::laplaceMagnify() {
 //        cv::imshow("First", output);
 
         // detect motion between input and prevFrame. on 2nd+ frame. Then set prevFrame to input.
+        // based upon https://towardsdatascience.com/image-analysis-for-beginners-creating-a-motion-detector-with-opencv-4ca6faba4b42
         if (currentFrame > 0) {
 
             newestMotion = output;
@@ -312,16 +313,41 @@ void Magnificator::laplaceMagnify() {
 //            cv::imshow("first", newestMotion);
 
 
+            // Dif between previous, raw frame and newst output frame
             cv::absdiff(prevFrame, newestMotion, preparedFrame);
+
+
+            Mat one = Mat::ones(2, 2, CV_8UC1);
+
+            cv::dilate(preparedFrame, preparedFrame, one, Point(-1,-1), 1);
+
+            Mat threshFrame;
+            cv::threshold(preparedFrame, threshFrame, 20, 255, cv::THRESH_BINARY);
+
+            // therhold frame honestly looks pretty good, if can find countours in that then do area from the tutorial, etc.
+            output = threshFrame;
+
+            vector<vector<Point> > contours;
+            cv::findContours(threshFrame, contours, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_SIMPLE);
+
+            Mat finalFrame = Mat::zeros(1280, 720, CV_8UC3);
+//            Mat finalFrame;
+            cv::drawContours(finalFrame, contours, -1, Scalar(0,255,0), 2, cv::LINE_AA);
+
+//            finalFrame.convertTo(finalFrame, CV_8UC1, 255.0, 1.0/255.0);
+
+//            cv::imshow("Window", finalFrame);
+//            magnifiedBuffer.push_back(finalFrame);
 
             prevFrame = input;
 
+
         }
-        // Fill internal buffer with magnified image
+
 
         // Make string to display on image (for convenience)
 //        sprintf(str, "%d", x); // green values string
-        sprintf(str, "%d", currentFrame);
+        sprintf(str, "%d", currentFrame); // current frame (first frame is 0, rest are 1.)
 
         // Put that string on the output
         cv::putText(output, //target image
@@ -332,6 +358,7 @@ void Magnificator::laplaceMagnify() {
                     CV_RGB(118, 185, 0), //font color
                     2);
         printf("Current frame: %d", currentFrame);
+        // Fill internal buffer with magnified image
         magnifiedBuffer.push_back(output);
         ++currentFrame;
     }
