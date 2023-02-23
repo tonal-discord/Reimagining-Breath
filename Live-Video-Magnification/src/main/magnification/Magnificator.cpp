@@ -324,20 +324,41 @@ void Magnificator::laplaceMagnify() {
             Mat threshFrame;
             cv::threshold(preparedFrame, threshFrame, 20, 255, cv::THRESH_BINARY);
 
-            // therhold frame honestly looks pretty good, if can find countours in that then do area from the tutorial, etc.
-            output = threshFrame;
+            // threshold frame honestly looks pretty good, if can find countours in that then do area from the tutorial, etc.
+            output = threshFrame; // remove this
+            vector<vector<Point>> contours;
+            cv::findContours(threshFrame, contours, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_NONE);
 
-            vector<vector<Point> > contours;
-            cv::findContours(threshFrame, contours, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_SIMPLE);
 
-            Mat finalFrame = Mat::zeros(1280, 720, CV_8UC3);
+            Mat finalFrame = Mat::zeros(720, 1280, CV_8UC3);
 //            Mat finalFrame;
             cv::drawContours(finalFrame, contours, -1, Scalar(0,255,0), 2, cv::LINE_AA);
-
+//            output = finalFrame; // remove this
 //            finalFrame.convertTo(finalFrame, CV_8UC1, 255.0, 1.0/255.0);
 
 //            cv::imshow("Window", finalFrame);
 //            magnifiedBuffer.push_back(finalFrame);
+
+
+            // Get coords of contours
+//            for (int i = 0; i < countours; i++) {
+
+//            }
+
+//            contours.resize(contours0.size());
+//            for( size_t k = 0; k < contours.size(); k++ ) {
+//                vector<Point> curcontour = contours.at(k);
+//                for (int i = 0; i < curcontour.size(); i++) {
+//                    Point contPoint = curcontour[i];
+//                            cout << endl << "Current y value" << contPoint << endl;
+//                }
+//            }
+
+//            vector<vector<Point>> contoursFin;
+//            for( size_t k = 0; k < contours.size(); k++ ) {
+//                cv::approxPolyDP(Mat(contours[k]), contoursFin[k], 3, true);
+//            }
+
 
             prevFrame = input;
 
