@@ -143,6 +143,34 @@ void Magnificator:: colorMagnify() {
     }
 }
 
+
+// type2str source: https://stackoverflow.com/questions/10167534/how-to-find-out-what-type-of-a-mat-object-is-with-mattype-in-opencv
+// Usage:
+//            string ty =  type2str( prevFrame.type() );
+//            printf("Matrix: %s %dx%d \n", ty.c_str(), prevFrame.cols, prevFrame.rows );
+string type2str(int type) {
+  string r;
+
+  uchar depth = type & CV_MAT_DEPTH_MASK;
+  uchar chans = 1 + (type >> CV_CN_SHIFT);
+
+  switch ( depth ) {
+    case CV_8U:  r = "8U"; break;
+    case CV_8S:  r = "8S"; break;
+    case CV_16U: r = "16U"; break;
+    case CV_16S: r = "16S"; break;
+    case CV_32S: r = "32S"; break;
+    case CV_32F: r = "32F"; break;
+    case CV_64F: r = "64F"; break;
+    default:     r = "User"; break;
+  }
+
+  r += "C";
+  r += (chans+'0');
+
+  return r;
+}
+
 void Magnificator::laplaceMagnify() {
     int pBufferElements = processingBuffer->size();
     // Magnify only when processing buffer holds new images
@@ -244,8 +272,8 @@ void Magnificator::laplaceMagnify() {
 
         /* 6. ADD MOTION TO ORIGINAL IMAGE */
         if(currentFrame > 0) {
-//            output = input+motion; // used in original
-             output = motion;
+            output = input+motion; // used in original
+//             output = motion;
 //            output = hsvimg;
         }
         else
@@ -267,15 +295,24 @@ void Magnificator::laplaceMagnify() {
         if (currentFrame > 0) {
 
             newestMotion = output;
+
+
+            // convert prevFrame
+            cvtColor(prevFrame, prevFrame, cv::COLOR_BGR2GRAY);
+            cv::GaussianBlur(prevFrame, prevFrame, Size(5,5), 0, 0);
+            prevFrame.convertTo(prevFrame, CV_8UC1, 255.0, 1.0/255.0);
+
+            // convert newestMotion
             cvtColor(output, newestMotion, cv::COLOR_BGR2GRAY);
             cv::GaussianBlur(newestMotion, newestMotion, Size(5,5), 0, 0);
+
+            preparedFrame = prevFrame;
+
+//            printf("%d AND %d AND %d", newestMotion.size(), prevFrame.size(), preparedFrame.size());
 //            cv::imshow("first", newestMotion);
 
-//            cv::absdiff(prevFrame, newestMotion, preparedFrame);
 
-
-
-
+            cv::absdiff(prevFrame, newestMotion, preparedFrame);
 
             prevFrame = input;
 
