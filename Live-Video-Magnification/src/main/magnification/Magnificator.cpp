@@ -152,7 +152,7 @@ void Magnificator::laplaceMagnify() {
 //    levels = DEFAULT_LAP_MAG_LEVELS;
     levels = imgProcSettings->levels;
 
-    Mat input, output, motion, hsvimg, labimg;
+    Mat input, output, motion, hsvimg, labimg, newestMotion, preparedFrame;
     vector<Mat> inputPyramid;
     int pChannels;
 
@@ -160,8 +160,15 @@ void Magnificator::laplaceMagnify() {
     while(currentFrame < pBufferElements) {
         // Grab oldest frame from processingBuffer and delete it to save memory
         input = processingBuffer->front().clone();
-        if(currentFrame > 0)
-            processingBuffer->erase(processingBuffer->begin());
+        if(currentFrame == 0) {
+            prevFrame = input; // save first raw input as prevFrame (for motion)
+        }
+
+            else {
+                processingBuffer->erase(processingBuffer->begin()); // delete oldest frame
+//                cv::imshow("First", prevFrame); // NOTE using imshow does not close the program.
+        }
+
 
         // Convert input image to 32bit float
         pChannels = input.channels();
@@ -208,8 +215,11 @@ void Magnificator::laplaceMagnify() {
             }
         }
 
+        // Motion is nothing at this point
         /* 4. RECONSTRUCT MOTION IMAGE FROM PYRAMID */
         buildImgFromLaplacePyr(motionPyramid, levels, motion);
+
+        // Now motion becomes something.
 
         /* 5. ATTENUATE (if not grayscale) */
         attenuate(motion, motion);
@@ -236,6 +246,7 @@ void Magnificator::laplaceMagnify() {
         if(currentFrame > 0) {
 //            output = input+motion; // used in original
              output = motion;
+//            output = hsvimg;
         }
         else
             output = input;
@@ -250,10 +261,30 @@ void Magnificator::laplaceMagnify() {
             output.convertTo(output, CV_8UC1, 255.0, 1.0/255.0);
         }
 
+//        cv::imshow("First", output);
+
+        // detect motion between input and prevFrame. on 2nd+ frame. Then set prevFrame to input.
+        if (currentFrame > 0) {
+
+            newestMotion = output;
+            cvtColor(output, newestMotion, cv::COLOR_BGR2GRAY);
+            cv::GaussianBlur(newestMotion, newestMotion, Size(5,5), 0, 0);
+//            cv::imshow("first", newestMotion);
+
+//            cv::absdiff(prevFrame, newestMotion, preparedFrame);
+
+
+
+
+
+            prevFrame = input;
+
+        }
         // Fill internal buffer with magnified image
 
         // Make string to display on image (for convenience)
-        sprintf(str, "%d", x); // green values string
+//        sprintf(str, "%d", x); // green values string
+        sprintf(str, "%d", currentFrame);
 
         // Put that string on the output
         cv::putText(output, //target image
@@ -263,7 +294,7 @@ void Magnificator::laplaceMagnify() {
                     1.0,
                     CV_RGB(118, 185, 0), //font color
                     2);
-
+        printf("Current frame: %d", currentFrame);
         magnifiedBuffer.push_back(output);
         ++currentFrame;
     }

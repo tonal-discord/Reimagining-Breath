@@ -11,7 +11,7 @@
 *.dylib
 
 # Qt-es
-
+build-rvm-Desktop-Debug/**
 /.qmake.cache
 /.qmake.stash
 *.pro.user

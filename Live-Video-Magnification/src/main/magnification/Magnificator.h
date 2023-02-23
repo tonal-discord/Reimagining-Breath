@@ -205,6 +205,11 @@ private:
      * \brief lowpassLo (Motion magnification) Holds image pyramid of lowpassed current frame with
      *  low cutoff
      */
+    Mat prevFrame;
+    /*!
+     * \brief prevFrame (Motion magnification) Holds previous frame to detect motion.
+     */
+
     vector<Mat> lowpassLo;
     /*!
      * \brief downSampledMat (Color magnification) Holds 2*fps rounded to next power of 2
