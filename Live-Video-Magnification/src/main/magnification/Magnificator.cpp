@@ -338,19 +338,77 @@ void Magnificator::laplaceMagnify() {
             //            cvtColor(output, output, cv::COLOR_BGR2HSV);
 //            cv::imshow("HSV", output); // why is it red?
 
+            // TODO: maybe do some bluring for noise reduction? as in https://docs.opencv.org/3.4/da/d0c/tutorial_bounding_rects_circles.html
 
 
 
             // contours approach below
             vector<vector<Point>> contours;
-            cv::findContours(threshFrame, contours, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_SIMPLE);
+            cv::findContours(threshFrame, contours, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_SIMPLE); // maybe experiment w/ diff modes
+            // like CV_RETR_EXTERNAL might help a TON.
 
-            Mat finalFrame = Mat::zeros(720, 1280, CV_8UC3);
+            Mat finalFrame = Mat::zeros(720, 1280, CV_8UC3); // don't remember why this is here and why it's 8UC3 not 8UC1.
 //            Mat finalFrame;
+
+
+
+
+
             cv::drawContours(finalFrame, contours, -1, Scalar(0,255,0), 2, cv::LINE_AA);
+
+
             output = finalFrame; // this is the frame after contours have been added.
 
-            finalFrame.convertTo(finalFrame, CV_8UC1, 255.0, 1.0/255.0); // useless thing here.
+//             WORKS!
+            cout << "Printting";
+            int w = contours.size();
+            if (w >= 2) {
+                w = 2;
+            }
+
+            int contoursSum = 0;
+            for (size_t i = 0; i < w; i++) {
+                cout << contours[i] << endl;
+
+
+                vector<Point> pont = contours[i];
+//                cout << "Vector: " << contours[i] << end;
+                // loop
+                int vectorSum = 0;
+                for (size_t j = 0; j < pont.size(); j++) {
+                    vectorSum += pont[j].y;
+                }
+                vectorSum /= pont.size();
+                cout << "Avg vector y-value: " << vectorSum << endl;
+                contoursSum += vectorSum;
+                w = w;
+            }
+//            contoursSum = contoursSum / w; // why does this crash program?
+            cout << "Avg contours y-value: " << contoursSum << endl;
+
+
+            // HULL - is interesting. Like approximates/ connects contours.
+//            vector<vector<Point> >hull( contours.size() );
+//            for( size_t i = 0; i < contours.size(); i++ )
+//            {
+//                cv::convexHull( contours[i], hull[i] );
+//            }
+//            cv::drawContours(finalFrame, hull, -1, Scalar(255,0,0), 2, cv::LINE_AA);
+
+
+            // don't work below here.
+//            cout << endl << "Contour size: " << contours.size() << endl;
+            // attempt to get contour's coordinates
+//            vector<Point> fifthcontour = contours[0]; // crashes???? why??? out of range?
+
+//            for (int i = 0; i < fifthcontour.size(); i++) {
+//                Point coordinate_i_ofcontour = fifthcontour[i];
+//                cout << endl << "contour with coordinates: x = " << coordinate_i_ofcontour.x << " y = " << coordinate_i_ofcontour.y;
+//            }
+
+
+
+//            finalFrame.convertTo(finalFrame, CV_8UC1, 255.0, 1.0/255.0); // useless thing here.
 
 //            cv::imshow("Window", finalFrame);
 //            magnifiedBuffer.push_back(finalFrame);
