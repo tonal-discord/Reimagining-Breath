@@ -303,7 +303,7 @@ void Magnificator::laplaceMagnify() {
             cv::GaussianBlur(prevFrame, prevFrame, Size(5,5), 0, 0);
             prevFrame.convertTo(prevFrame, CV_8UC1, 255.0, 1.0/255.0);
 
-            // convert newestMotion
+            // convert newestMotion as a gray of output
             cvtColor(output, newestMotion, cv::COLOR_BGR2GRAY);
             cv::GaussianBlur(newestMotion, newestMotion, Size(5,5), 0, 0);
 
@@ -322,19 +322,35 @@ void Magnificator::laplaceMagnify() {
             cv::dilate(preparedFrame, preparedFrame, one, Point(-1,-1), 1);
 
             Mat threshFrame;
-            cv::threshold(preparedFrame, threshFrame, 20, 255, cv::THRESH_BINARY);
+            cv::threshold(preparedFrame, threshFrame, 20, 255, cv::THRESH_BINARY); // 20, 255 are the thresholds.
+
+            bitwise_not(threshFrame, threshFrame); // invert image so foreground is white, background is black. (contours detct white on black)
 
             // threshold frame honestly looks pretty good, if can find countours in that then do area from the tutorial, etc.
-            output = threshFrame; // remove this
-            vector<vector<Point>> contours;
-            cv::findContours(threshFrame, contours, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_NONE);
+            output = threshFrame; // Set the output to threshold frame.
 
+            cvtColor(output, output, cv::COLOR_GRAY2BGR);
+//            cv::imshow("BGR", output); // here it's white and black, looks pretty decent.
+
+
+
+
+            //            cvtColor(output, output, cv::COLOR_BGR2HSV);
+//            cv::imshow("HSV", output); // why is it red?
+
+
+
+
+            // contours approach below
+            vector<vector<Point>> contours;
+            cv::findContours(threshFrame, contours, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_SIMPLE);
 
             Mat finalFrame = Mat::zeros(720, 1280, CV_8UC3);
 //            Mat finalFrame;
             cv::drawContours(finalFrame, contours, -1, Scalar(0,255,0), 2, cv::LINE_AA);
-//            output = finalFrame; // remove this
-//            finalFrame.convertTo(finalFrame, CV_8UC1, 255.0, 1.0/255.0);
+            output = finalFrame; // this is the frame after contours have been added.
+
+            finalFrame.convertTo(finalFrame, CV_8UC1, 255.0, 1.0/255.0); // useless thing here.
 
 //            cv::imshow("Window", finalFrame);
 //            magnifiedBuffer.push_back(finalFrame);
@@ -378,7 +394,7 @@ void Magnificator::laplaceMagnify() {
                     1.0,
                     CV_RGB(118, 185, 0), //font color
                     2);
-        printf("Current frame: %d", currentFrame);
+//        printf("Current frame: %d", currentFrame);
         // Fill internal buffer with magnified image
         magnifiedBuffer.push_back(output);
         ++currentFrame;
