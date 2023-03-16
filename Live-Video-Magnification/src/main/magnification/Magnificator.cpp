@@ -22,6 +22,7 @@
 /* along with this program.  If not, see <http://www.gnu.org/licenses/>.            */
 /************************************************************************************/
 
+// TODO: Frequency of 30-40% seemed decent.
 #include "main/magnification/Magnificator.h"
 
 ////////////////////////
@@ -67,6 +68,7 @@ int Magnificator::calculateMaxLevels(Size s)
 ////////////////////////
 ///Magnification ///////
 ////////////////////////
+/// prevAvg
 void Magnificator:: colorMagnify() {
     int pBufferElements = processingBuffer->size();
     // Magnify only when processing buffer holds new images
@@ -171,6 +173,7 @@ string type2str(int type) {
   return r;
 }
 
+int prevAvgContoursSum = 0; // todo fix this
 void Magnificator::laplaceMagnify() {
     int pBufferElements = processingBuffer->size();
     // Magnify only when processing buffer holds new images
@@ -359,35 +362,73 @@ void Magnificator::laplaceMagnify() {
 
             output = finalFrame; // this is the frame after contours have been added.
 
-//             WORKS!
+//             WORKS! TODO: If tehre are a few high contours, definitely not breathing but it thinks it is.
+            // So, need to exclude if there are few contours.
+            // Taking average y of contour vs the minimu of contour doesn't change anything.
             cout << "Calculating contours... " << endl;
-            int w = contours.size();
+            int numContours = contours.size();
 
             int contoursSum = 0;
-            for (size_t i = 0; i < w; i++) {
+            for (size_t i = 0; i < numContours; i++) {
 //                cout << contours[i] << endl; // Contours is a vector of contours(which are stored as point vectors)
 
                 vector<Point> pont = contours[i];
 //                cout << "Vector: " << contours[i] << end;
-                int vectorSum = 0;
+                int vectorSum = 9000;
                 for (size_t j = 0; j < pont.size(); j++) {
-                    vectorSum += pont[j].y;
+                     vectorSum += pont[j].y; // average
+//                    if (pont[j].y < vectorSum) { // minimum
+//                        vectorSum = pont[j].y;
+//                    }
                 }
-                vectorSum /= pont.size();
+                vectorSum /= pont.size(); // comment out for minimum.
 //                cout << "Avg vector contour y-value: " << vectorSum << endl; // this is a vector containing points of a contour
                 contoursSum += vectorSum;
             }
-            if (w==0) {
+            if (numContours==0) {
                 contoursSum = 0;
             } else {
-                contoursSum = contoursSum / w; // why does this crash program? Can divide by 2 but not by w. THis is ag contorus.
+                contoursSum = contoursSum / numContours; // why does this crash program? Can divide by 2 but not by w. THis is ag contorus.
             }
 
 
-            // If there are many contours, are breathing.
+            // TODO: If there are many contours, that have changed are breathing. Need a way to do this.
+            // next steps
+            // This is because now if you hold breath, someimtes 1-10 contours pop up higher or lower, so then it thinks it's a breath.
+            // TODO: also includ esome sort of time-based thing, might not want/need to check every frame if the contours have moved.
 
-            cout << "Avg contours y-value: " << contoursSum << " " << w << " Contours. " << endl;
-            sprintf(str, "%d", contoursSum);
+            cout << "Avg contours y-value: " << contoursSum << " " << numContours << " Contours. " << endl;
+
+            // set initial prevavgcontourssum if first frame.
+            if (currentFrame == 0) {
+                prevAvgContoursSum = contoursSum;
+//                prevNumContours = numContours;
+            }
+//            char print[20];
+//            // if avg contours have moved up
+            std::string txt;
+            if (contoursSum - prevAvgContoursSum > 10) {
+                txt = "INHALE. " + std::to_string(contoursSum) ;
+            }
+            // else if avg contours have moved down
+            else if (contoursSum - prevAvgContoursSum < -10) {
+                txt = "EXHALE. " + std::to_string(contoursSum) ;
+            } else {
+                txt = "NOTHIN. " + std::to_string(contoursSum) ;
+            }
+//            cout << print;
+
+            prevAvgContoursSum = contoursSum;
+
+            cv::putText(output, //target image
+                        txt, //text
+                        cv::Point(10, output.rows / 2), //top-left position
+                        cv::FONT_HERSHEY_DUPLEX,
+                        1.0,
+                        CV_RGB(118, 185, 0), //font color
+                        2);
+
+
 
 
             // HULL - is interesting. Like approximates/ connects contours.
@@ -444,17 +485,18 @@ void Magnificator::laplaceMagnify() {
 
 
         // Make string to display on image (for convenience)
-//        sprintf(str, "%d", x); // green values string
+//        sprintf(str, print); // green values string
 //        sprintf(str, "%d", currentFrame); // current frame (first frame is 0, rest are 1.)
 
+
         // Put that string on the output
-        cv::putText(output, //target image
-                    str, //text
-                    cv::Point(10, output.rows / 2), //top-left position
-                    cv::FONT_HERSHEY_DUPLEX,
-                    1.0,
-                    CV_RGB(118, 185, 0), //font color
-                    2);
+//        cv::putText(output, //target image
+//                    str, //text
+//                    cv::Point(10, output.rows / 2), //top-left position
+//                    cv::FONT_HERSHEY_DUPLEX,
+//                    1.0,
+//                    CV_RGB(118, 185, 0), //font color
+//                    2);
 //        printf("Current frame: %d", currentFrame);
         // Fill internal buffer with magnified image
         magnifiedBuffer.push_back(output);
