@@ -344,7 +344,7 @@ void Magnificator::laplaceMagnify() {
 
             // contours approach below
             vector<vector<Point>> contours;
-            cv::findContours(threshFrame, contours, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_SIMPLE); // maybe experiment w/ diff modes
+            cv::findContours(threshFrame, contours, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_TC89_L1); // maybe experiment w/ diff modes
             // like CV_RETR_EXTERNAL might help a TON.
 
             Mat finalFrame = Mat::zeros(720, 1280, CV_8UC3); // don't remember why this is here and why it's 8UC3 not 8UC1.
@@ -360,31 +360,34 @@ void Magnificator::laplaceMagnify() {
             output = finalFrame; // this is the frame after contours have been added.
 
 //             WORKS!
-            cout << "Printting";
+            cout << "Calculating contours... " << endl;
             int w = contours.size();
-            if (w >= 2) {
-                w = 2;
-            }
 
             int contoursSum = 0;
             for (size_t i = 0; i < w; i++) {
-                cout << contours[i] << endl;
-
+//                cout << contours[i] << endl; // Contours is a vector of contours(which are stored as point vectors)
 
                 vector<Point> pont = contours[i];
 //                cout << "Vector: " << contours[i] << end;
-                // loop
                 int vectorSum = 0;
                 for (size_t j = 0; j < pont.size(); j++) {
                     vectorSum += pont[j].y;
                 }
                 vectorSum /= pont.size();
-                cout << "Avg vector y-value: " << vectorSum << endl;
+//                cout << "Avg vector contour y-value: " << vectorSum << endl; // this is a vector containing points of a contour
                 contoursSum += vectorSum;
-                w = w;
             }
-//            contoursSum = contoursSum / w; // why does this crash program?
-            cout << "Avg contours y-value: " << contoursSum << endl;
+            if (w==0) {
+                contoursSum = 0;
+            } else {
+                contoursSum = contoursSum / w; // why does this crash program? Can divide by 2 but not by w. THis is ag contorus.
+            }
+
+
+            // If there are many contours, are breathing.
+
+            cout << "Avg contours y-value: " << contoursSum << " " << w << " Contours. " << endl;
+            sprintf(str, "%d", contoursSum);
 
 
             // HULL - is interesting. Like approximates/ connects contours.
@@ -442,7 +445,7 @@ void Magnificator::laplaceMagnify() {
 
         // Make string to display on image (for convenience)
 //        sprintf(str, "%d", x); // green values string
-        sprintf(str, "%d", currentFrame); // current frame (first frame is 0, rest are 1.)
+//        sprintf(str, "%d", currentFrame); // current frame (first frame is 0, rest are 1.)
 
         // Put that string on the output
         cv::putText(output, //target image
