@@ -173,6 +173,32 @@ string type2str(int type) {
   return r;
 }
 
+int buff[30];
+int front = 0;
+int back = 0;
+void circBuffInsert(int input) {
+    buff[front++] = input;
+    front %= 30;
+}
+
+
+int circBuffLength() {
+   return front;
+}
+
+int circBuffAvg() {
+    int temp = 0;
+    for (int i = 0; i <= front; i++) {
+        temp += buff[i];
+    }
+    int tempfront = front;
+    if (tempfront == 0) {
+        tempfront = 1;
+    }
+    return temp /= tempfront;
+
+}
+
 int prevAvgContoursSum = 0; // todo fix this
 void Magnificator::laplaceMagnify() {
     int pBufferElements = processingBuffer->size();
@@ -296,6 +322,7 @@ void Magnificator::laplaceMagnify() {
 
         // detect motion between input and prevFrame. on 2nd+ frame. Then set prevFrame to input.
         // based upon https://towardsdatascience.com/image-analysis-for-beginners-creating-a-motion-detector-with-opencv-4ca6faba4b42
+        // Make this < 0 and edit above currentFrame >0 to original if want to just see original.
         if (currentFrame > 0) {
 
             newestMotion = output;
@@ -362,9 +389,11 @@ void Magnificator::laplaceMagnify() {
 
             output = finalFrame; // this is the frame after contours have been added.
 
+
 //             WORKS! TODO: If tehre are a few high contours, definitely not breathing but it thinks it is.
             // So, need to exclude if there are few contours.
             // Taking average y of contour vs the minimu of contour doesn't change anything.
+            // TODO: Only interested in contours that move a lot and stay around.
             cout << "Calculating contours... " << endl;
             int numContours = contours.size();
 
@@ -372,9 +401,9 @@ void Magnificator::laplaceMagnify() {
             for (size_t i = 0; i < numContours; i++) {
 //                cout << contours[i] << endl; // Contours is a vector of contours(which are stored as point vectors)
 
-                vector<Point> pont = contours[i];
+                vector<Point> pont = contours[i]; // pont is a contour defined as a vector consistuing of multiple points.
 //                cout << "Vector: " << contours[i] << end;
-                int vectorSum = 9000;
+                int vectorSum = 0;
                 for (size_t j = 0; j < pont.size(); j++) {
                      vectorSum += pont[j].y; // average
 //                    if (pont[j].y < vectorSum) { // minimum
@@ -406,18 +435,33 @@ void Magnificator::laplaceMagnify() {
             }
 //            char print[20];
 //            // if avg contours have moved up
+            // if most contours have moved.
             std::string txt;
             if (contoursSum - prevAvgContoursSum > 10) {
-                txt = "INHALE. " + std::to_string(contoursSum) ;
+                circBuffInsert(20);
+//                txt = "INHALE. " + std::to_string(contoursSum) ;
             }
             // else if avg contours have moved down
             else if (contoursSum - prevAvgContoursSum < -10) {
-                txt = "EXHALE. " + std::to_string(contoursSum) ;
+//                txt = "EXHALE. " + std::to_string(contoursSum) ;
+                circBuffInsert(10);
             } else {
-                txt = "NOTHIN. " + std::to_string(contoursSum) ;
+//                txt = "NOTHIN. " + std::to_string(contoursSum) ;
+                circBuffInsert(0);
             }
 //            cout << print;
+            int temp = circBuffAvg();
+            if (temp > 15) {
+                txt = "INHALE. " + std::to_string(circBuffLength()) ;
+            }
+            else if (temp < 15 && temp > 5) {
+                txt = "EXHALE. " + std::to_string(contoursSum) ;
+            }
 
+
+//                else {
+//                txt = "NOTHIN. " + std::to_string(contoursSum) ;
+//            }
             prevAvgContoursSum = contoursSum;
 
             cv::putText(output, //target image
