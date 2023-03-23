@@ -209,7 +209,7 @@ void Magnificator::laplaceMagnify() {
 //    levels = DEFAULT_LAP_MAG_LEVELS;
     levels = imgProcSettings->levels;
 
-    Mat input, output, motion, hsvimg, labimg, newestMotion, preparedFrame;
+    Mat input, output, motion, hsvimg, labimg, newestMotion, preparedFrame, detected_edges;
     vector<Mat> inputPyramid;
     int pChannels;
 
@@ -308,6 +308,56 @@ void Magnificator::laplaceMagnify() {
         else
             output = input;
 
+
+
+//        cv::imshow("First", output);
+
+        // EDGE DETECTION method.
+        Mat motion_gray;
+        if (currentFrame < 0) {
+//            motion_gray = motion;
+//            newestMotion = output;
+
+            // Convert input image
+//            cvtColor(input, input, cv::COLOR_YCrCb2BGR);
+//            input.convertTo(input, CV_8UC1, 255.0, 1.0/255.0);
+
+            // convert prevFrame to GRAY, blur it a bit.
+//            cvtColor(input, motion_gray, cv::COLOR_BGR2GRAY);
+//            cv::blur(motion_gray, detected_edges, Size(3,3));
+
+
+            // canny detect edges
+//            cv::Canny(detected_edges, detected_edges, 100, 300, 3);
+
+//            cv::GaussianBlur(prevFrame, prevFrame, Size(5,5), 0, 0);
+//            prevFrame.convertTo(prevFrame, CV_8UC1, 255.0, 1.0/255.0);
+
+
+            // convert newestMotion as a gray of output (motion currently)
+//            cvtColor(output, newestMotion, cv::COLOR_BGR2GRAY);
+//            cv::GaussianBlur(newestMotion, newestMotion, Size(5,5), 0, 0);
+
+//            output = Scalar::all(0);
+//            motion.copyTo(output, detected_edges);
+
+            // Convert input format
+//            input.convertTo(input, CV_8UC3, 255.0, 1.0/255.0);
+
+//            string ty =  type2str( input.type() );
+//            printf("Matrix: %s %dx%d \n", ty.c_str(), input.cols, input.rows );
+
+//            cvtColor(motion, motion, cv::COLOR_BGR2GRAY);
+//            motion.convertTo(motion, CV_8UC1, 255.0, 1.0/255.0);
+
+//            output = motion;
+//            prevFrame = motion;
+//            output = Scalar::all(0);
+
+//            output = detected_edges;
+
+        }
+
         // Scale output image an convert back to 8bit unsigned
         if(!(imgProcFlags->grayscaleOn || pChannels <= 2)) {
             // Convert YCrCb image back to BGR
@@ -317,12 +367,10 @@ void Magnificator::laplaceMagnify() {
         else {
             output.convertTo(output, CV_8UC1, 255.0, 1.0/255.0);
         }
-
-//        cv::imshow("First", output);
-
+        // CONTOUR METHOD.
         // detect motion between input and prevFrame. on 2nd+ frame. Then set prevFrame to input.
         // based upon https://towardsdatascience.com/image-analysis-for-beginners-creating-a-motion-detector-with-opencv-4ca6faba4b42
-        // Make this < 0 and edit above currentFrame >0 to original if want to just see original.
+        // Make this > 0 to use. and edit above currentFrame >0 to original if want to just see original.
         if (currentFrame > 0) {
 
             newestMotion = output;
@@ -525,7 +573,9 @@ void Magnificator::laplaceMagnify() {
             prevFrame = input;
 
 
-        }
+        } // end contours
+
+
 
 
         // Make string to display on image (for convenience)
