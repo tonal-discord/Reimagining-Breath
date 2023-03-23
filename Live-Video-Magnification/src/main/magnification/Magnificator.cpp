@@ -315,15 +315,15 @@ void Magnificator::laplaceMagnify() {
         // EDGE DETECTION method.
         Mat motion_gray;
         if (currentFrame > 0) {
-
+            output = input+motion;
 //            cvtColor(input, input, cv::COLOR_BGR2GRAY);
             // input already grayscale?
-            cvtColor(input, input, cv::COLOR_YCrCb2BGR); // this is completely normal image now.
+            cvtColor(output, output, cv::COLOR_YCrCb2BGR); // this is completely normal image now.
 
 //            input.convertTo(input, CV_8UC3, 255.0, 1.0/255.0); // THIS Don't work.. (try to make multi channel)
             // make it multichanel
             cv::Mat out;
-            cv::Mat in[] = {input, input, input};
+            cv::Mat in[] = {output, output, output};
             cv::merge(in, 1, out);
 
             cvtColor(out, out, cv::COLOR_BGR2GRAY); // make black and white works
@@ -338,7 +338,7 @@ void Magnificator::laplaceMagnify() {
 
             // canny detect edges
             detected_edges.convertTo(detected_edges, CV_8UC1, 255.0, 1.0/255.0);
-            cv::Canny(detected_edges, detected_edges, 80, 250, 3);
+            cv::Canny(detected_edges, detected_edges, 100, 250, 3);
 
             cv::imshow("H", detected_edges);
 //            cv::GaussianBlur(prevFrame, prevFrame, Size(5,5), 0, 0);
