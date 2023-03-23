@@ -328,26 +328,19 @@ void Magnificator::laplaceMagnify() {
 
             cvtColor(out, out, cv::COLOR_BGR2GRAY); // make black and white works
 
-            cv::imshow("H", out);
-            // TODO continue from here.
-//            input.convertTo(input, CV_8UC3, 255.0, 1.0/255.0);
-//            cv::imshow("H", input);
-            output = input;
-//            motion_gray = motion;
-//            newestMotion = output;
 
-            // Convert input image
-//            cvtColor(input, input, cv::COLOR_YCrCb2BGR);
-//            input.convertTo(input, CV_8UC1, 255.0, 1.0/255.0);
+            // TODO continue from here.
+            output = input;
 
             // convert prevFrame to GRAY, blur it a bit.
-//            cvtColor(input, motion_gray, cv::COLOR_BGR2GRAY);
-//            cv::blur(motion_gray, detected_edges, Size(3,3));
+            cv::blur(out, detected_edges, Size(3,3));
 
 
             // canny detect edges
-//            cv::Canny(detected_edges, detected_edges, 100, 300, 3);
+            detected_edges.convertTo(detected_edges, CV_8UC1, 255.0, 1.0/255.0);
+            cv::Canny(detected_edges, detected_edges, 80, 250, 3);
 
+            cv::imshow("H", detected_edges);
 //            cv::GaussianBlur(prevFrame, prevFrame, Size(5,5), 0, 0);
 //            prevFrame.convertTo(prevFrame, CV_8UC1, 255.0, 1.0/255.0);
 
