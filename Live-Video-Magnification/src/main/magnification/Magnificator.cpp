@@ -338,34 +338,29 @@ void Magnificator::laplaceMagnify() {
 
             // canny detect edges
             detected_edges.convertTo(detected_edges, CV_8UC1, 255.0, 1.0/255.0);
-            cv::Canny(detected_edges, detected_edges, 100, 250, 3);
-            output = detected_edges;
-//            cv::imshow("H", detected_edges);
-//            cv::GaussianBlur(prevFrame, prevFrame, Size(5,5), 0, 0);
-//            prevFrame.convertTo(prevFrame, CV_8UC1, 255.0, 1.0/255.0);
-
-
-            // convert newestMotion as a gray of output (motion currently)
-//            cvtColor(output, newestMotion, cv::COLOR_BGR2GRAY);
-//            cv::GaussianBlur(newestMotion, newestMotion, Size(5,5), 0, 0);
-
-//            output = Scalar::all(0);
-//            motion.copyTo(output, detected_edges);
-
-            // Convert input format
-//            input.convertTo(input, CV_8UC3, 255.0, 1.0/255.0);
-
-//            string ty =  type2str( input.type() );
-//            printf("Matrix: %s %dx%d \n", ty.c_str(), input.cols, input.rows );
-
-//            cvtColor(motion, motion, cv::COLOR_BGR2GRAY);
-//            motion.convertTo(motion, CV_8UC1, 255.0, 1.0/255.0);
-
-//            output = motion;
-//            prevFrame = motion;
-//            output = Scalar::all(0);
+            cv::Canny(detected_edges, detected_edges, 75, 275, 3); // bigger range of first 2 numbers is less likely to pick up bg/small motion stuff
 
 //            output = detected_edges;
+
+            vector<vector<Point>> contours;
+            cv::findContours(detected_edges, contours, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_TC89_L1); // maybe experiment w/ diff modes
+            // like CV_RETR_EXTERNAL might help a TON.
+
+            Mat finalFrame = Mat::zeros(720, 1280, CV_8UC3); // don't remember why this is here and why it's 8UC3 not 8UC1.
+//            Mat finalFrame;
+
+
+
+
+
+            cv::drawContours(finalFrame, contours, -1, Scalar(0,255,0), 2, cv::LINE_AA);
+
+
+            output = finalFrame; // this is the frame after contours have been added.
+
+            prevFrame = detected_edges; // save previous frame
+//            cv::imshow("H", detected_edges);
+//
 
         }
 
@@ -383,7 +378,8 @@ void Magnificator::laplaceMagnify() {
         // based upon https://towardsdatascience.com/image-analysis-for-beginners-creating-a-motion-detector-with-opencv-4ca6faba4b42
         // Make this > 0 to use. and edit above currentFrame >0 to original if want to just see original.
         if (currentFrame < 0) {
-
+                        cvtColor(output, output, cv::COLOR_YCrCb2BGR);
+            output.convertTo(output, CV_8UC3, 255.0, 1.0/255.0);
             newestMotion = output;
 
 
