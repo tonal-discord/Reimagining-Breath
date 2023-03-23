@@ -314,7 +314,25 @@ void Magnificator::laplaceMagnify() {
 
         // EDGE DETECTION method.
         Mat motion_gray;
-        if (currentFrame < 0) {
+        if (currentFrame > 0) {
+
+//            cvtColor(input, input, cv::COLOR_BGR2GRAY);
+            // input already grayscale?
+            cvtColor(input, input, cv::COLOR_YCrCb2BGR); // this is completely normal image now.
+
+//            input.convertTo(input, CV_8UC3, 255.0, 1.0/255.0); // THIS Don't work.. (try to make multi channel)
+            // make it multichanel
+            cv::Mat out;
+            cv::Mat in[] = {input, input, input};
+            cv::merge(in, 1, out);
+
+            cvtColor(out, out, cv::COLOR_BGR2GRAY); // make black and white works
+
+            cv::imshow("H", out);
+            // TODO continue from here.
+//            input.convertTo(input, CV_8UC3, 255.0, 1.0/255.0);
+//            cv::imshow("H", input);
+            output = input;
 //            motion_gray = motion;
 //            newestMotion = output;
 
@@ -371,7 +389,7 @@ void Magnificator::laplaceMagnify() {
         // detect motion between input and prevFrame. on 2nd+ frame. Then set prevFrame to input.
         // based upon https://towardsdatascience.com/image-analysis-for-beginners-creating-a-motion-detector-with-opencv-4ca6faba4b42
         // Make this > 0 to use. and edit above currentFrame >0 to original if want to just see original.
-        if (currentFrame > 0) {
+        if (currentFrame < 0) {
 
             newestMotion = output;
 
@@ -435,7 +453,7 @@ void Magnificator::laplaceMagnify() {
             cv::drawContours(finalFrame, contours, -1, Scalar(0,255,0), 2, cv::LINE_AA);
 
 
-            output = finalFrame; // this is the frame after contours have been added.
+//            output = finalFrame; // this is the frame after contours have been added.
 
 
 //             WORKS! TODO: If tehre are a few high contours, definitely not breathing but it thinks it is.
