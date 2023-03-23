@@ -318,19 +318,19 @@ void Magnificator::laplaceMagnify() {
             output = input+motion;
 //            cvtColor(input, input, cv::COLOR_BGR2GRAY);
             // input already grayscale?
-            cvtColor(output, output, cv::COLOR_YCrCb2BGR); // this is completely normal image now.
+            cvtColor(output, preparedFrame, cv::COLOR_YCrCb2BGR); // this is completely normal image now.
 
 //            input.convertTo(input, CV_8UC3, 255.0, 1.0/255.0); // THIS Don't work.. (try to make multi channel)
             // make it multichanel
             cv::Mat out;
-            cv::Mat in[] = {output, output, output};
+            cv::Mat in[] = {preparedFrame, preparedFrame, preparedFrame};
             cv::merge(in, 1, out);
 
             cvtColor(out, out, cv::COLOR_BGR2GRAY); // make black and white works
 
 
             // TODO continue from here.
-            output = input;
+//            output = input;
 
             // convert prevFrame to GRAY, blur it a bit.
             cv::blur(out, detected_edges, Size(3,3));
@@ -339,8 +339,8 @@ void Magnificator::laplaceMagnify() {
             // canny detect edges
             detected_edges.convertTo(detected_edges, CV_8UC1, 255.0, 1.0/255.0);
             cv::Canny(detected_edges, detected_edges, 100, 250, 3);
-
-            cv::imshow("H", detected_edges);
+            output = detected_edges;
+//            cv::imshow("H", detected_edges);
 //            cv::GaussianBlur(prevFrame, prevFrame, Size(5,5), 0, 0);
 //            prevFrame.convertTo(prevFrame, CV_8UC1, 255.0, 1.0/255.0);
 
@@ -370,14 +370,14 @@ void Magnificator::laplaceMagnify() {
         }
 
         // Scale output image an convert back to 8bit unsigned
-        if(!(imgProcFlags->grayscaleOn || pChannels <= 2)) {
-            // Convert YCrCb image back to BGR
-            cvtColor(output, output, cv::COLOR_YCrCb2BGR);
-            output.convertTo(output, CV_8UC3, 255.0, 1.0/255.0);
-        }
-        else {
-            output.convertTo(output, CV_8UC1, 255.0, 1.0/255.0);
-        }
+//        if(!(imgProcFlags->grayscaleOn || pChannels <= 2)) {
+//            // Convert YCrCb image back to BGR
+//            cvtColor(output, output, cv::COLOR_YCrCb2BGR);
+//            output.convertTo(output, CV_8UC3, 255.0, 1.0/255.0);
+//        }
+//        else {
+//            output.convertTo(output, CV_8UC1, 255.0, 1.0/255.0);
+//        }
         // CONTOUR METHOD.
         // detect motion between input and prevFrame. on 2nd+ frame. Then set prevFrame to input.
         // based upon https://towardsdatascience.com/image-analysis-for-beginners-creating-a-motion-detector-with-opencv-4ca6faba4b42
