@@ -316,10 +316,11 @@ void Magnificator::laplaceMagnify() {
         Mat motion_gray;
         if (currentFrame > 0) {
             output = input+motion;
+
 //            cvtColor(input, input, cv::COLOR_BGR2GRAY);
             // input already grayscale?
             cvtColor(output, preparedFrame, cv::COLOR_YCrCb2BGR); // this is completely normal image now.
-
+//            cv::imshow("H", preparedFrame);
 //            input.convertTo(input, CV_8UC3, 255.0, 1.0/255.0); // THIS Don't work.. (try to make multi channel)
             // make it multichanel
             cv::Mat out;
@@ -359,6 +360,49 @@ void Magnificator::laplaceMagnify() {
             output = finalFrame; // this is the frame after contours have been added.
 
             prevFrame = detected_edges; // save previous frame
+
+
+            // count contours
+            int numContours = contours.size();
+
+                        int contoursSum = 0;
+                        for (size_t i = 0; i < numContours; i++) {
+            //                cout << contours[i] << endl; // Contours is a vector of contours(which are stored as point vectors)
+
+                            vector<Point> pont = contours[i]; // pont is a contour defined as a vector consistuing of multiple points.
+//                            cout << "Vector: " << contours[i] << endl;
+                            int vectorSum = 0;
+                            for (size_t j = 0; j < pont.size(); j++) {
+                                  // average
+                                if (pont[j].y > 219) { // minimum
+                                        vectorSum += pont[j].y;
+                                }
+                            }
+                            vectorSum /= pont.size(); // comment out for minimum.
+            //                cout << "Avg vector contour y-value: " << vectorSum << endl; // this is a vector containing points of a contour
+                            contoursSum += vectorSum;
+                      } // END iterate thru contours
+
+                    // get average contour y position
+                    if (numContours==0) {
+                        contoursSum = 0;
+                    } else {
+                        contoursSum = contoursSum / numContours; // why does this crash program? Can divide by 2 but not by w. THis is ag contorus.
+                    }
+
+                    std::string txt;
+
+                    cout << contoursSum << endl;
+                    txt = "NOTHIN. " + std::to_string(contoursSum) ;
+
+                    cv::putText(output, //target image
+                                txt, //text
+                                cv::Point(10, output.rows / 2), //top-left position
+                                cv::FONT_HERSHEY_DUPLEX,
+                                1.0,
+                                CV_RGB(118, 185, 0), //font color
+                                2);
+
 //            cv::imshow("H", detected_edges);
 //
 
