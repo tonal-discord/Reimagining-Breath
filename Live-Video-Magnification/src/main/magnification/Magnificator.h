@@ -33,6 +33,7 @@
 #include "opencv2/core/core.hpp"
 #include "opencv2/imgproc/imgproc.hpp"
 #include "opencv2/highgui/highgui.hpp"
+#include <opencv2/core/mat.hpp> // didn't fix it?
 // Local
 #include "main/magnification/SpatialFilter.h"
 #include "main/magnification/TemporalFilter.h"
@@ -68,7 +69,7 @@ public:
      * \param imageProcSettings Pointer to the Settings for magnification. These settings can be changed during
      *  the magnification process
      */
-    Magnificator(vector<Mat> *pBuffer = 0,
+    Magnificator(vector<cv::Mat> *pBuffer = 0,
                  struct ImageProcessingFlags *imageProcFlags = 0,
                  struct ImageProcessingSettings *imageProcSettings = 0);
     ~Magnificator();

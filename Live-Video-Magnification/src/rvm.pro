@@ -13,39 +13,40 @@ linux {
 win32 {
     ##########################################################################
     # !! Change this to match your OpenCV (>= v4) installation on Windows !! #
-    INCLUDEPATH += D:/Programme/OpenCV/source/opencv/install/include
+    # This is the OpenCV built from the self extracting.exe installer
+    INCLUDEPATH += C:\Users\Tyler\OpenCV\build\install\include
     CONFIG(release, debug|release) {
-        LIBS += D:\Programme\OpenCV\source\opencv\install\x64\vc15\lib\opencv_core412.lib
-        LIBS += D:\Programme\OpenCV\source\opencv\install\x64\vc15\lib\opencv_highgui412.lib
-        LIBS += D:\Programme\OpenCV\source\opencv\install\x64\vc15\lib\opencv_imgproc412.lib
-        LIBS += D:\Programme\OpenCV\source\opencv\install\x64\vc15\lib\opencv_imgcodecs412.lib
-        LIBS += D:\Programme\OpenCV\source\opencv\install\x64\vc15\lib\opencv_videoio412.lib
-        LIBS += D:\Programme\OpenCV\source\opencv\install\x64\vc15\lib\opencv_video412.lib
-        LIBS += D:\Programme\OpenCV\source\tbb2019_20190605oss\lib\intel64\vc14\tbb.lib
+        LIBS += C:\Users\Tyler\OpenCV\build\install\x64\vc16\lib\opencv_core470.lib
+        LIBS += C:\Users\Tyler\OpenCV\build\install\x64\vc16\lib\opencv_highgui470.lib
+        LIBS += C:\Users\Tyler\OpenCV\build\install\x64\vc16\lib\opencv_imgproc470.lib
+        LIBS += C:\Users\Tyler\OpenCV\build\install\x64\vc16\lib\opencv_imgcodecs470.lib
+        LIBS += C:\Users\Tyler\OpenCV\build\install\x64\vc16\lib\opencv_videoio470.lib
+        LIBS += C:\Users\Tyler\OpenCV\build\install\x64\vc16\lib\opencv_video470.lib
+#        LIBS += D:\Programme\OpenCV\source\tbb2019_20190605oss\lib\intel64\vc14\tbb.lib # I didn't use tbb
     }
+    # Below are supposed to be the libs ending in 'd' for debug, but I didn't have those
     CONFIG(debug, debug|release) {
         DEFINES += DEBUG_MODE
-        LIBS += D:\Programme\OpenCV\source\opencv\install\x64\vc15\lib\opencv_core412d.lib
-        LIBS += D:\Programme\OpenCV\source\opencv\install\x64\vc15\lib\opencv_highgui412d.lib
-        LIBS += D:\Programme\OpenCV\source\opencv\install\x64\vc15\lib\opencv_imgproc412d.lib
-        LIBS += D:\Programme\OpenCV\source\opencv\install\x64\vc15\lib\opencv_imgcodecs412d.lib
-        LIBS += D:\Programme\OpenCV\source\opencv\install\x64\vc15\lib\opencv_videoio412d.lib
-        LIBS += D:\Programme\OpenCV\source\opencv\install\x64\vc15\lib\opencv_video412d.lib
-        LIBS += D:\Programme\OpenCV\source\tbb2019_20190605oss\lib\intel64\vc14\tbb_debug.lib
+        LIBS += C:\Users\Tyler\OpenCV\build\install\x64\vc16\lib\opencv_core470.lib
+        LIBS += C:\Users\Tyler\OpenCV\build\install\x64\vc16\lib\opencv_highgui470.lib
+        LIBS += C:\Users\Tyler\OpenCV\build\install\x64\vc16\lib\opencv_imgproc470.lib
+        LIBS += C:\Users\Tyler\OpenCV\build\install\x64\vc16\lib\opencv_imgcodecs470.lib
+        LIBS += C:\Users\Tyler\OpenCV\build\install\x64\vc16\lib\opencv_videoio470.lib
+        LIBS += C:\Users\Tyler\OpenCV\build\install\x64\vc16\lib\opencv_video470.lib
     }
-    LIBS += -L"D:/Programme/OpenCV/source/opencv/install/x64/vc15/bin"
+    LIBS += -L"C:\Users\Tyler\OpenCV\build\install\x64\vc16\bin"
     # !! Change this to match your OpenCV (>= v4) installation on Windows !! #
     ##########################################################################
 
     # Comment out if OpenCV was compiled without TBB
-    LIBS += -L"D:/Programme/OpenCV/source/tbb2019_20190605oss/bin/intel64/vc14"
+#    LIBS += -L"D:/Programme/OpenCV/source/tbb2019_20190605oss/bin/intel64/vc14"
 
     # Place compiled filed inside distinct release and debug folder
     # without another release and debug folder within each release and debug folder
     CONFIG -= debug_and_release debug_and_release_target
 
-    CV22_INCLUDE =
-    CV22_LIB =
+#    CV22_INCLUDE =
+#    CV22_LIB =
 }
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets

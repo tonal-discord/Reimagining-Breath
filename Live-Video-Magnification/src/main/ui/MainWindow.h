@@ -32,6 +32,7 @@
 #include <QLabel>
 #include <QMessageBox>
 #include <QUrl>
+#include <QActionGroup>
 // Local
 #include "main/ui/CameraConnectDialog.h"
 #include "main/ui/CameraView.h"
@@ -58,7 +59,7 @@ class MainWindow : public QMainWindow
         QMap<int, int> deviceNumberMap;
         QMap<int, CameraView*> cameraViewMap;
         QMap<QString, int> fileNumberMap;
-        QMap<QString, VideoView*> videoViewMap;
+        QMap<QString, Ui::VideoView*> videoViewMap;
         SharedImageBuffer *sharedImageBuffer;
         bool removeFromMapByTabIndex(QMap<int, int>& map, int tabIndex);
         void updateMapValues(QMap<int, int>& map, int tabIndex);

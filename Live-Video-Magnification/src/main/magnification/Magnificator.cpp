@@ -23,7 +23,10 @@
 /************************************************************************************/
 
 // TODO: Frequency of 30-40% seemed decent.
+//using namespace cv;
 #include "main/magnification/Magnificator.h"
+#include "opencv2/opencv.hpp"
+#include <opencv2/core/mat.hpp> // didn't fix it
 
 ////////////////////////
 ///Constructor /////////
@@ -35,12 +38,12 @@ Magnificator::Magnificator(std::vector<Mat> *pBuffer,
     imgProcFlags(imageProcFlags),
     imgProcSettings(imageProcSettings),
     currentFrame(0)
-{
-    levels = 4;
-    exaggeration_factor = 2.f;
-    lambda = 0;
-    delta = 0;
-}
+    {
+        levels = 4;
+        exaggeration_factor = 2.f;
+        lambda = 0;
+        delta = 0;
+    }
 Magnificator::~Magnificator()
 {
     clearBuffer();
