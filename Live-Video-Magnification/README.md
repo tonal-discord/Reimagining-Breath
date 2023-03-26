@@ -10,7 +10,7 @@ See link above or read orignal_README.md for details, it's pretty thorough.
 2. Install [opencv](https://opencv.org/releases/) version 4.6.0
 
 Three options that I've tried (none worked for me):
-- Easiest option: Move the .exe from link right above to C:\ and run it. This will make a folder called opencv.
+- Easiest option: Move the .exe from link right above to C:\ and run it. This will make a folder called opencv. Add the folder to path with the SETX command in this [tutorial](https://docs.opencv.org/4.x/d3/d52/tutorial_windows_install.html#tutorial_windows_install_path) using your own path
 - Slowest option: Build it from source following [this tutorial](https://www.youtube.com/watch?v=_fqpYLM6SCw) (takes a long time)
 - install with [vcpkg](https://vcpkg.io/en/getting-started.html) and Visual Studio
 3. Now in theory you can open the program in QTCreator by selecting open project and browsing to `/src/rvm.pro`
