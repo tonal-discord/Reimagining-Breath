@@ -5,9 +5,9 @@ C++ realtime(almost) camera magnification.
 See link above or read orignal_README.md for details, it's pretty thorough.
 
 ## Setting it up on Windows (hasn't worked yet):
-1. Install Qt Creator, you will have to make an account, [here](https://www.qt.io/download-open-source?hsCtaTracking=e9c17691-91a0-4616-9bc2-1a6a6c318914%7C963686f8-2c68-442a-b17b-3d73ce95b819) (scroll down to "Download the QT Online Installer")
-
-2. Install [opencv](https://opencv.org/releases/)  
+1. Install Qt Creator 8.0.1, you will have to make an account, [here](https://download.qt.io/official_releases/qtcreator/8.0/8.0.1/) 
+- I used QT version 5.1538
+2. Install [opencv](https://opencv.org/releases/) version 4.6.0
 
 Three options that I've tried (none worked for me):
 - Easiest option: Move the .exe from link right above to C:\ and run it. This will make a folder called opencv.
