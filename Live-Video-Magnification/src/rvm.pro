@@ -11,30 +11,36 @@ linux {
 }
 
 win32 {
+    INCLUDEPATH += C:\opencv\opencv-build\install\include
+
+
+
     ##########################################################################
     # !! Change this to match your OpenCV (>= v4) installation on Windows !! #
-    # This is the OpenCV built from the self extracting.exe installer
-    INCLUDEPATH += C:\Users\Tyler\OpenCV\build\install\include
+    INCLUDEPATH += C:\opencv\opencv-build\install\include
     CONFIG(release, debug|release) {
-        LIBS += C:\Users\Tyler\OpenCV\build\install\x64\vc16\lib\opencv_core470.lib
-        LIBS += C:\Users\Tyler\OpenCV\build\install\x64\vc16\lib\opencv_highgui470.lib
-        LIBS += C:\Users\Tyler\OpenCV\build\install\x64\vc16\lib\opencv_imgproc470.lib
-        LIBS += C:\Users\Tyler\OpenCV\build\install\x64\vc16\lib\opencv_imgcodecs470.lib
-        LIBS += C:\Users\Tyler\OpenCV\build\install\x64\vc16\lib\opencv_videoio470.lib
-        LIBS += C:\Users\Tyler\OpenCV\build\install\x64\vc16\lib\opencv_video470.lib
-#        LIBS += D:\Programme\OpenCV\source\tbb2019_20190605oss\lib\intel64\vc14\tbb.lib # I didn't use tbb
+        LIBS += C:\opencv\opencv-build\bin\libopencv_core460.dll
+        LIBS += C:\opencv\opencv-build\bin\libopencv_highgui460.dll
+        LIBS += C:\opencv\opencv-build\bin\libopencv_imgcodecs460.dll
+        LIBS += C:\opencv\opencv-build\bin\libopencv_imgproc460.dll
+        LIBS += C:\opencv\opencv-build\bin\libopencv_features2d460.dll
+        LIBS += C:\opencv\opencv-build\bin\libopencv_calib3d460.dll
+        LIBS += C:\opencv\opencv-build\bin\libopencv_videoio460.dll
+#        LIBS += D:\Programme\OpenCV\source\tbb2019_20190605oss\lib\intel64\vc14\tbb.lib # didn't use TBB.
     }
-    # Below are supposed to be the libs ending in 'd' for debug, but I didn't have those
+    # THis section below (debug build) is useless, unless you compile with some debug option in Cmake
     CONFIG(debug, debug|release) {
         DEFINES += DEBUG_MODE
-        LIBS += C:\Users\Tyler\OpenCV\build\install\x64\vc16\lib\opencv_core470.lib
-        LIBS += C:\Users\Tyler\OpenCV\build\install\x64\vc16\lib\opencv_highgui470.lib
-        LIBS += C:\Users\Tyler\OpenCV\build\install\x64\vc16\lib\opencv_imgproc470.lib
-        LIBS += C:\Users\Tyler\OpenCV\build\install\x64\vc16\lib\opencv_imgcodecs470.lib
-        LIBS += C:\Users\Tyler\OpenCV\build\install\x64\vc16\lib\opencv_videoio470.lib
-        LIBS += C:\Users\Tyler\OpenCV\build\install\x64\vc16\lib\opencv_video470.lib
+        LIBS += C:\opencv\opencv-build\bin\libopencv_core460d.dll
+        LIBS += C:\opencv\opencv-build\bin\libopencv_highgui460d.dll
+        LIBS += C:\opencv\opencv-build\bin\libopencv_imgcodecs460d.dll
+        LIBS += C:\opencv\opencv-build\bin\libopencv_imgproc460d.dll
+        LIBS += C:\opencv\opencv-build\bin\libopencv_features2d460d.dll
+        LIBS += C:\opencv\opencv-build\bin\libopencv_calib3d460d.dll
+        LIBS += C:\opencv\opencv-build\bin\libopencv_videoio460.dll
+#        LIBS += D:\Programme\OpenCV\source\tbb2019_20190605oss\lib\intel64\vc14\tbb_debug.lib
     }
-    LIBS += -L"C:\Users\Tyler\OpenCV\build\install\x64\vc16\bin"
+        LIBS += -L"C:\opencv\opencv-build\install\x64\mingw\bin"
     # !! Change this to match your OpenCV (>= v4) installation on Windows !! #
     ##########################################################################
 
