@@ -6,7 +6,7 @@ See link above or read orignal_README.md for details, it's pretty thorough.
 
 ## Setting it up on Windows:
 Follow this tutorial: https://wiki.qt.io/How_to_setup_Qt_and_openCV_on_Windows/
-In Cmake, if some sections aren't showing up press configure again. Keep changing what it says and pressing configure until there are no red rows.
+In Cmake, if some sections aren't showing up press configure again. Keep changing what it says and pressing configure until there are no red rows.  
 If you installed Python through the windows store, you will probably be missing Python.h, if so download and install Python from their website and add that to your path.
 
 
