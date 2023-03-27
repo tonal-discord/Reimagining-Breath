@@ -4,6 +4,14 @@ C++ realtime(almost) camera magnification.
 
 See link above or read orignal_README.md for details, it's pretty thorough.
 
+## Setting it up on Windows:
+Follow this tutorial: https://wiki.qt.io/How_to_setup_Qt_and_openCV_on_Windows/
+In Cmake, if some sections aren't showing up press configure again. Keep changing what it says and pressing configure until there are no red rows.
+If you installed Python through the windows store, you will probably be missing Python.h, if so download and install Python from their website and add that to your path.
+
+
+-----------------------
+## Old (may be useful who knows)
 ## Setting it up on Windows (hasn't worked yet):
 1. Install Qt Creator 8.0.1, you will have to make an account, [here](https://download.qt.io/official_releases/qtcreator/8.0/8.0.1/) 
 - I used QT version 5.1538
