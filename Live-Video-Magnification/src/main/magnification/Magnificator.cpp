@@ -24,6 +24,8 @@
 
 // TODO: Frequency of 30-40% seemed decent.
 #include "main/magnification/Magnificator.h"
+#include <iostream>
+#include <fstream>
 
 ////////////////////////
 ///Constructor /////////
@@ -199,6 +201,22 @@ int circBuffAvg() {
 
 }
 
+void create()
+{
+    double value1(10);
+    double value2(13.2);
+    QFile file("./file.csv");
+    if (file.open(QFile::WriteOnly|QFile::Truncate))
+    {
+        QTextStream stream(&file);
+        stream << value1 << "\t" << value2 << "\n"; // this writes first line with two columns
+        file.flush();
+
+        file.close();
+    }
+
+}
+
 int prevAvgContoursSum = 0; // todo fix this
 void Magnificator::laplaceMagnify() {
     int pBufferElements = processingBuffer->size();
@@ -305,13 +323,20 @@ void Magnificator::laplaceMagnify() {
              output = motion;
 //            output = hsvimg;
         }
-        else
+        else {
             output = input;
+//            std::ofstream myFile("foo.csv");
+//             myFile << "Start of run" << endl;
+//             myFile.close();
+//            std::vector<int> vec(100, 1);
+//            write_csv("test.csv", "Col1", vec);
+            create();
+        }
 
 
 
 //        cv::imshow("First", output);
-
+        create();
         // EDGE DETECTION method.
         Mat motion_gray;
         if (currentFrame > 0) {
@@ -393,6 +418,10 @@ void Magnificator::laplaceMagnify() {
                     std::string txt;
 
                     cout << contoursSum << endl;
+
+
+
+
                     txt = "NOTHIN. " + std::to_string(contoursSum) ;
 
                     cv::putText(output, //target image
