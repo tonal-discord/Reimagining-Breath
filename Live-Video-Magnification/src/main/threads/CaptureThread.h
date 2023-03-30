@@ -58,7 +58,7 @@ class CaptureThread : public QThread
         SharedImageBuffer *sharedImageBuffer;
         VideoCapture cap;
         Mat grabbedFrame;
-        QTime t;
+        QElapsedTimer t;
         QMutex doStopMutex;
         QQueue<int> fps;
         struct ThreadStatisticsData statsData;

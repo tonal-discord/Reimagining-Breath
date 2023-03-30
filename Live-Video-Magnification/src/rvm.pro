@@ -11,41 +11,48 @@ linux {
 }
 
 win32 {
+    INCLUDEPATH += C:\opencv\opencv-build\install\include
+
+
+
     ##########################################################################
     # !! Change this to match your OpenCV (>= v4) installation on Windows !! #
-    INCLUDEPATH += D:/Programme/OpenCV/source/opencv/install/include
+    INCLUDEPATH += C:\opencv\opencv-build\install\include
     CONFIG(release, debug|release) {
-        LIBS += D:\Programme\OpenCV\source\opencv\install\x64\vc15\lib\opencv_core412.lib
-        LIBS += D:\Programme\OpenCV\source\opencv\install\x64\vc15\lib\opencv_highgui412.lib
-        LIBS += D:\Programme\OpenCV\source\opencv\install\x64\vc15\lib\opencv_imgproc412.lib
-        LIBS += D:\Programme\OpenCV\source\opencv\install\x64\vc15\lib\opencv_imgcodecs412.lib
-        LIBS += D:\Programme\OpenCV\source\opencv\install\x64\vc15\lib\opencv_videoio412.lib
-        LIBS += D:\Programme\OpenCV\source\opencv\install\x64\vc15\lib\opencv_video412.lib
-        LIBS += D:\Programme\OpenCV\source\tbb2019_20190605oss\lib\intel64\vc14\tbb.lib
+        LIBS += C:\opencv\opencv-build\bin\libopencv_core460.dll
+        LIBS += C:\opencv\opencv-build\bin\libopencv_highgui460.dll
+        LIBS += C:\opencv\opencv-build\bin\libopencv_imgcodecs460.dll
+        LIBS += C:\opencv\opencv-build\bin\libopencv_imgproc460.dll
+        LIBS += C:\opencv\opencv-build\bin\libopencv_features2d460.dll
+        LIBS += C:\opencv\opencv-build\bin\libopencv_calib3d460.dll
+        LIBS += C:\opencv\opencv-build\bin\libopencv_videoio460.dll
+#        LIBS += D:\Programme\OpenCV\source\tbb2019_20190605oss\lib\intel64\vc14\tbb.lib # didn't use TBB.
     }
+    # THis section below (debug build) is useless, unless you compile with some debug option in Cmake
     CONFIG(debug, debug|release) {
         DEFINES += DEBUG_MODE
-        LIBS += D:\Programme\OpenCV\source\opencv\install\x64\vc15\lib\opencv_core412d.lib
-        LIBS += D:\Programme\OpenCV\source\opencv\install\x64\vc15\lib\opencv_highgui412d.lib
-        LIBS += D:\Programme\OpenCV\source\opencv\install\x64\vc15\lib\opencv_imgproc412d.lib
-        LIBS += D:\Programme\OpenCV\source\opencv\install\x64\vc15\lib\opencv_imgcodecs412d.lib
-        LIBS += D:\Programme\OpenCV\source\opencv\install\x64\vc15\lib\opencv_videoio412d.lib
-        LIBS += D:\Programme\OpenCV\source\opencv\install\x64\vc15\lib\opencv_video412d.lib
-        LIBS += D:\Programme\OpenCV\source\tbb2019_20190605oss\lib\intel64\vc14\tbb_debug.lib
+        LIBS += C:\opencv\opencv-build\bin\libopencv_core460d.dll
+        LIBS += C:\opencv\opencv-build\bin\libopencv_highgui460d.dll
+        LIBS += C:\opencv\opencv-build\bin\libopencv_imgcodecs460d.dll
+        LIBS += C:\opencv\opencv-build\bin\libopencv_imgproc460d.dll
+        LIBS += C:\opencv\opencv-build\bin\libopencv_features2d460d.dll
+        LIBS += C:\opencv\opencv-build\bin\libopencv_calib3d460d.dll
+        LIBS += C:\opencv\opencv-build\bin\libopencv_videoio460.dll
+#        LIBS += D:\Programme\OpenCV\source\tbb2019_20190605oss\lib\intel64\vc14\tbb_debug.lib
     }
-    LIBS += -L"D:/Programme/OpenCV/source/opencv/install/x64/vc15/bin"
+        LIBS += -L"C:\opencv\opencv-build\install\x64\mingw\bin"
     # !! Change this to match your OpenCV (>= v4) installation on Windows !! #
     ##########################################################################
 
     # Comment out if OpenCV was compiled without TBB
-    LIBS += -L"D:/Programme/OpenCV/source/tbb2019_20190605oss/bin/intel64/vc14"
+#    LIBS += -L"D:/Programme/OpenCV/source/tbb2019_20190605oss/bin/intel64/vc14"
 
     # Place compiled filed inside distinct release and debug folder
     # without another release and debug folder within each release and debug folder
     CONFIG -= debug_and_release debug_and_release_target
 
-    CV22_INCLUDE =
-    CV22_LIB =
+#    CV22_INCLUDE =
+#    CV22_LIB =
 }
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets

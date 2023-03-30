@@ -102,7 +102,7 @@ private:
         QImage frame;
         QImage originalFrame;
         // processing measurement
-        QTime t;
+        QElapsedTimer t;
         int processingTime;
         int fpsSum;
         int sampleNumber;
