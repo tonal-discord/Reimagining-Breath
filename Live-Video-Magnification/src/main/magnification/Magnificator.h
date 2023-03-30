@@ -27,6 +27,7 @@
 // Qt
 #include "QList"
 #include "QTime"
+#include "QFile"
 #include <qdebug.h>
 // OpenCV
 #include "opencv2/opencv.hpp"

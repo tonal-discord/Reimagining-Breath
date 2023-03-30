@@ -431,6 +431,28 @@ void Magnificator::laplaceMagnify() {
 
             cout << "Avg contours y-value: " << contoursSum << " " << numContours << " Contours. " << endl;
 
+
+            // write avg contours file to csv
+            QFile file("out.csv");
+            if (file.open(QIODevice::WriteOnly | QIODevice::Append)); {
+                if(!file.isOpen())
+                {
+                    //alert that file did not open
+                    cout << "Couldn't open file";
+                }
+
+                QTextStream outStream(&file);
+                outStream << contoursSum << "\n";
+
+                file.close();
+            }
+
+
+
+
+
+
+
             // set initial prevavgcontourssum if first frame.
             if (currentFrame == 0) {
                 prevAvgContoursSum = contoursSum;
