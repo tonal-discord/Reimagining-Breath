@@ -1,5 +1,21 @@
 ## [Live Video Magnification](https://github.com/tschnz/Live-Video-Magnification)
 
+TODOs: 
+- Instead of building from src, try unzipping [opencv.zip](https://drive.google.com/file/d/1sh63BbIwR6FJ2E_qEA8cqg3bwMOptkE1/view?usp=share_link)(from Google drive) in C:\, so that you have C:\opencv\opencv-4.6.0 etc...
+  - [Add it to path](https://www.architectryan.com/2018/03/17/add-to-the-path-on-windows-10/) (`C:\opencv\opencv-build\install\x64\mingw\bin`)
+  - Does that work?
+
+- Fix webcam image frame being shifted/scaled.
+  - In code I did things with just 1280x720.
+  - If you select a region by dragging on webcam preview for example, the output is messed up.
+- Make it detect breathing better 
+  - Just have very basic motion/edge tracking, should be improved.
+  - Calibration stage would help a lot (maybe user holds breath or breathes to max/min or something.)
+
+- Automatically crop/zoom webcam (worst case, you can drag the webcam image and it selects an area.)
+- Fix video input? (easier to test)
+
+
 C++ realtime(almost) camera magnification.
 
 See link above or read orignal_README.md for details, it's pretty thorough.
