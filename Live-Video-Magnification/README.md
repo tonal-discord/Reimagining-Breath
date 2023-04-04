@@ -1,10 +1,6 @@
 ## [Live Video Magnification](https://github.com/tschnz/Live-Video-Magnification)
 
 TODOs: 
-- Instead of building from src, try unzipping [opencv.zip](https://drive.google.com/file/d/1sh63BbIwR6FJ2E_qEA8cqg3bwMOptkE1/view?usp=share_link)(from Google drive) in C:\, so that you have C:\opencv\opencv-4.6.0 etc...
-  - [Add it to path](https://www.architectryan.com/2018/03/17/add-to-the-path-on-windows-10/) (`C:\opencv\opencv-build\install\x64\mingw\bin`)
-  - Does that work?
-
 - Fix webcam image frame being shifted/scaled.
   - In code I did things with just 1280x720.
   - If you select a region by dragging on webcam preview for example, the output is messed up.
@@ -20,7 +16,15 @@ C++ realtime(almost) camera magnification.
 
 See link above or read orignal_README.md for details, it's pretty thorough.
 
-## Setting it up on Windows:
+## Setting it up on Windows (for development):
+1. Install Qt Creator (you will have to make an account) [here](https://www.qt.io/download-qt-installer-oss) 
+2. Unzip [opencv.zip](https://drive.google.com/file/d/1sh63BbIwR6FJ2E_qEA8cqg3bwMOptkE1/view?usp=share_link)(from Google drive) in C:\, so that you have C:\opencv\opencv-4.6.0 etc...
+  - [Add it to path](https://www.architectryan.com/2018/03/17/add-to-the-path-on-windows-10/) (`C:\opencv\opencv-build\install\x64\mingw\bin`)
+3. In Qt Creator, open a new project and select `./src/rvm.pro`
+
+This works!
+
+The longer way is to build it from source:
 Follow this tutorial: https://wiki.qt.io/How_to_setup_Qt_and_openCV_on_Windows/
 In Cmake, if some sections aren't showing up press configure again. Keep changing what it says and pressing configure until there are no red rows.  
 If you installed Python through the windows store, you will probably be missing Python.h, if so download and install Python from their website and add that to your path.
