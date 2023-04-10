@@ -24,9 +24,7 @@
 
 
 #include "main/ui/MainWindow.h"
-#include "main/ui/VideoView.h"
 #include "ui_MainWindow.h"
-#include "ui_VideoView.h"
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -131,62 +129,61 @@ void MainWindow::connectToCamera()
                 QMessageBox::warning(this,tr("ERROR:"),tr("Could not connect to camera. Already connected."));
         }
         // Attempt to load a file
-        // commented out because was broken
-//        else if(cameraConnectDialog->isFile()) {
-//            // Get the filepath from connectDialog
-//            QString filepath = cameraConnectDialog->getFilepath();
-//            // String can't be empty
-//            if(filepath.isEmpty()) {
-//                QMessageBox::warning(this,tr("ERROR:"),tr("Please enter path to video file."));
-//                connectToCamera();
-//                return;
-//            }
-//            // Load the File
-//            QFileInfo file(filepath);
-//            QString filename = file.fileName();
-//            if(file.exists()){
-//                // Create new Videofile entry in QMap
-//                videoViewMap[filename] = new VideoView(ui->tabWidget,filepath);
-//                // Attemp to load the video
-//                if(videoViewMap[filename]->loadVideo(cameraConnectDialog->getPlayerThreadPrio(),
-//                                                     cameraConnectDialog->getResolutionWidth(),
-//                                                     cameraConnectDialog->getResolutionHeight(),
-//                                                     cameraConnectDialog->getFpsNumber()))
-//                {
-//                    // Add to map
-//                    fileNumberMap[filename] = nextTabIndex;
-//                    // Save tab label
-//                    QString tabLabel = cameraConnectDialog->getTabLabel();
-//                    // Allow tabs to be closed
-//                    ui->tabWidget->setTabsClosable(true);
-//                    // If start tab remove
-//                    if(nextTabIndex==0)
-//                        ui->tabWidget->removeTab(0);
-//                    // Add tab
-//                    ui->tabWidget.addTab(videoViewMap[filename], tabLabel+"["+filename+"]");
-//                    ui->tabWidget->setCurrentWidget(videoViewMap[filename]);
-//                    // Set tooltips
-//                    setTabCloseToolTips(ui->tabWidget, tr("Remove Video"));
-//                    // Set Codec
-//                    videoViewMap[filename]->setCodec(saveCodec);
-//                    videoViewMap[filename]->set_useVideoCodec(useVideoCodec);
-//                }
-//                // Could not load video
-//                else {
-//                    // Display error message
-//                    QMessageBox::warning(this,tr("ERROR:"),tr("Could not convert Video. Please check file format."));
-//                    // Explicitly delete widget
-//                    delete videoViewMap[filename];
-//                    videoViewMap.remove(filename);
-//                }
-//            }
+        else if(cameraConnectDialog->isFile()) {
+            // Get the filepath from connectDialog
+            QString filepath = cameraConnectDialog->getFilepath();
+            // String can't be empty
+            if(filepath.isEmpty()) {
+                QMessageBox::warning(this,tr("ERROR:"),tr("Please enter path to video file."));
+                connectToCamera();
+                return;
+            }
+            // Load the File
+            QFileInfo file(filepath);
+            QString filename = file.fileName();
+            if(file.exists()){
+                // Create new Videofile entry in QMap
+                videoViewMap[filename] = new VideoView(ui->tabWidget,filepath);
+                // Attemp to load the video
+                if(videoViewMap[filename]->loadVideo(cameraConnectDialog->getPlayerThreadPrio(),
+                                                     cameraConnectDialog->getResolutionWidth(),
+                                                     cameraConnectDialog->getResolutionHeight(),
+                                                     cameraConnectDialog->getFpsNumber()))
+                {
+                    // Add to map
+                    fileNumberMap[filename] = nextTabIndex;
+                    // Save tab label
+                    QString tabLabel = cameraConnectDialog->getTabLabel();
+                    // Allow tabs to be closed
+                    ui->tabWidget->setTabsClosable(true);
+                    // If start tab remove
+                    if(nextTabIndex==0)
+                        ui->tabWidget->removeTab(0);
+                    // Add tab
+                    ui->tabWidget->addTab(videoViewMap[filename], tabLabel+"["+filename+"]");
+                    ui->tabWidget->setCurrentWidget(videoViewMap[filename]);
+                    // Set tooltips
+                    setTabCloseToolTips(ui->tabWidget, tr("Remove Video"));
+                    // Set Codec
+                    videoViewMap[filename]->setCodec(saveCodec);
+                    videoViewMap[filename]->set_useVideoCodec(useVideoCodec);
+                }
+                // Could not load video
+                else {
+                    // Display error message
+                    QMessageBox::warning(this,tr("ERROR:"),tr("Could not convert Video. Please check file format."));
+                    // Explicitly delete widget
+                    delete videoViewMap[filename];
+                    videoViewMap.remove(filename);
+                }
+            }
             // Error if file does not exist
-//            else {
-//                QMessageBox::warning(this,tr("ERROR:"),tr("File does not exist."));
-//                connectToCamera();
-//                return;
-//            }
-//        }
+            else {
+                QMessageBox::warning(this,tr("ERROR:"),tr("File does not exist."));
+                connectToCamera();
+                return;
+            }
+        }
     }
     // Delete dialog
     delete cameraConnectDialog;
@@ -344,7 +341,7 @@ void MainWindow::setFullScreen(bool input)
 void MainWindow::addCodecs()
 {
     QMenu *codecMenu;
-    QActionGroup * codecGroup;
+    QActionGroup *codecGroup;
     QAction *codecAction;
 
     //Set up Menu and action group
@@ -417,12 +414,11 @@ void MainWindow::setCodec(QAction *action)
     int codec;
 
     if(name == "Same as Videosource") {
-        // TODO fix this, was causing errors
-//        QMap<QString, VideoView*>::iterator h;
-//        useVideoCodec = action->isChecked();
+        QMap<QString, VideoView*>::iterator h;
+        useVideoCodec = action->isChecked();
 
-//        for(h = videoViewMap.begin() ; h != videoViewMap.end(); h++)
-//            h.value()->set_useVideoCodec(useVideoCodec);
+        for(h = videoViewMap.begin() ; h != videoViewMap.end(); h++)
+            h.value()->set_useVideoCodec(useVideoCodec);
     }
     else {
         action->setChecked(true);
@@ -454,10 +450,9 @@ void MainWindow::setCodec(QAction *action)
         for(i = cameraViewMap.begin() ; i != cameraViewMap.end(); i++)
             i.value()->setCodec(codec);
 
-        // TODO fix this, was causing errors
-//        QMap<QString, Ui::VideoView*>::iterator j;
-//        for(j = videoViewMap.begin() ; j != videoViewMap.end(); j++)
-//            j.value()->setCodec(codec);
+        QMap<QString, VideoView*>::iterator j;
+        for(j = videoViewMap.begin() ; j != videoViewMap.end(); j++)
+            j.value()->setCodec(codec);
 
         saveCodec = codec;
     }

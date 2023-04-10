@@ -59,7 +59,7 @@ class MainWindow : public QMainWindow
         QMap<int, int> deviceNumberMap;
         QMap<int, CameraView*> cameraViewMap;
         QMap<QString, int> fileNumberMap;
-        QMap<QString, Ui::VideoView*> videoViewMap;
+        QMap<QString, VideoView*> videoViewMap;
         SharedImageBuffer *sharedImageBuffer;
         bool removeFromMapByTabIndex(QMap<int, int>& map, int tabIndex);
         void updateMapValues(QMap<int, int>& map, int tabIndex);

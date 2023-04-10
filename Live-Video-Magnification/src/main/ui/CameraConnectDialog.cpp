@@ -25,12 +25,10 @@
 #include "main/ui/CameraConnectDialog.h"
 #include "ui_CameraConnectDialog.h"
 
-
 CameraConnectDialog::CameraConnectDialog(QWidget *parent) :
     QDialog(parent),
     ui(new Ui::CameraConnectDialog)
 {  
-    // Setup dialog
     ui->setupUi(this);
     // deviceNumberEdit (device number) input validation
     QRegularExpression rx1("^[0-9]{1,3}$"); // Integers 0 to 999

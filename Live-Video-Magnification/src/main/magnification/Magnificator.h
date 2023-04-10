@@ -57,9 +57,9 @@ using namespace std;
 class Magnificator
 {
 public:
-    //////////////////////// 
-    ///Magnification /////// 
-    //////////////////////// 
+    ////////////////////////
+    ///Magnification ///////
+    ////////////////////////
     /*!
      * \brief Magnificator Constructor for this class.
      * \param pBuffer Pointer to a processing buffer (preferably with
@@ -97,7 +97,7 @@ public:
 
     ////////////////////////
     ///Magnified Buffer ///
-    //////////////////////// 
+    ////////////////////////
     /*!
      * \brief getFrameLast Returns the last/newest magnified image. After that, the first/oldest frame is deleted.
      * \return A Mat with the same size like the images in the provided processingBuffer.
@@ -126,9 +126,9 @@ public:
 
     bool hasFrame();
 
-    //////////////////////// 
-    ///Processing Buffer // 
-    //////////////////////// 
+    ////////////////////////
+    ///Processing Buffer //
+    ////////////////////////
     /*!
      * \brief getOptimalBufferSize Used to calculate buffer and cache size for color magnification.
      *  Best results with ~2 seconds film material and a size that is a power of 2.
@@ -144,9 +144,9 @@ private:
      */
     vector<Mat> *processingBuffer;
 
-    //////////////////////// 
-    ///External Settings // 
-    //////////////////////// 
+    ////////////////////////
+    ///External Settings //
+    ////////////////////////
     /*!
      * \brief imgProcFlags Pointer to processing flags, given in constructor. Effectively used to
      *  indicate grayscale mode.
@@ -158,9 +158,9 @@ private:
      */
     ImageProcessingSettings *imgProcSettings;
 
-    //////////////////////// 
-    ///Internal Settings // 
-    //////////////////////// 
+    ////////////////////////
+    ///Internal Settings //
+    ////////////////////////
     /*!
      * \brief delta (Motion magnification) Calculated by cutoff wavelength and amplification.
      */
@@ -185,9 +185,9 @@ private:
      */
     int levels;
 
-    //////////////////////// 
-    ///Cache ///////// /////// 
-    //////////////////////// 
+    ////////////////////////
+    ///Cache ///////// ///////
+    ////////////////////////
     /*!
      * \brief magnifiedBuffer (Both) Holds magnified images, that are not yet given to the GUI.
      */
@@ -224,9 +224,9 @@ private:
     std::shared_ptr<RieszTemporalFilter> loCutoff;
     std::shared_ptr<RieszTemporalFilter> hiCutoff;
 
-    //////////////////////// 
+    ////////////////////////
     ///Postprocessing //////
-    //////////////////////// 
+    ////////////////////////
     /*!
      * \brief amplifyLaplacian (Motion magnification) Amplifies a Laplacian image pyramid.
      * \param src Source image.

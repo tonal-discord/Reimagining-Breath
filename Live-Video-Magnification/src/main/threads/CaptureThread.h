@@ -30,8 +30,6 @@
 #include <QtCore/QThread>
 // OpenCV
 #include <opencv2/highgui/highgui.hpp>
-
-#include <QElapsedTimer>
 // Local
 #include "main/helper/SharedImageBuffer.h"
 #include "main/other/Config.h"
