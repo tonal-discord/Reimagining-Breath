@@ -231,12 +231,12 @@ void VideoView::updateMouseCursorPosLabel()
                                      QString(")"));
 
     // Show pixel cursor position if camera is connected (image is being shown)
-    if(!ui->frameLabel->pixmap().isNull())
+    if(!(ui->frameLabel->pixmap().isNull()))
     {
         // Scaling factor calculation depends on whether frame is scaled to fit label or not
         if(!ui->frameLabel->hasScaledContents())
         {
-            double xScalingFactor=((double) ui->frameLabel->getMouseCursorPos().x() - ((ui->frameLabel->width() - ui->frameLabel->pixmap().width()) / 2)) / (double) ui->frameLabel->pixmap().width();
+            double xScalingFactor=((double) ui->frameLabel->getMouseCursorPos().x() - ((ui->frameLabel->pixmap().width() - ui->frameLabel->pixmap().width()) / 2)) / (double) ui->frameLabel->pixmap().width();
             double yScalingFactor=((double) ui->frameLabel->getMouseCursorPos().y() - ((ui->frameLabel->height() - ui->frameLabel->pixmap().height()) / 2)) / (double) ui->frameLabel->pixmap().height();
 
             ui->mouseCursorPosLabel->setText(ui->mouseCursorPosLabel->text()+
@@ -337,7 +337,7 @@ void VideoView::updateMouseCursorPosLabelOriginalFrame()
                                      QString(")"));
 
     // Show pixel cursor position if camera is connected (image is being shown)
-    if(!originalFrame->pixmap().isNull())
+    if(!(originalFrame->pixmap().isNull()))
     {
         // Scaling factor calculation depends on whether frame is scaled to fit label or not
         if(!originalFrame->hasScaledContents())

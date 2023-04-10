@@ -22,7 +22,11 @@
 /* along with this program.  If not, see <http://www.gnu.org/licenses/>.            */
 /************************************************************************************/
 
+// TODO: Frequency of 30-40% seemed decent.
+//using namespace cv;
 #include "main/magnification/Magnificator.h"
+#include "opencv2/opencv.hpp"
+#include <opencv2/core/mat.hpp> // didn't fix it
 
 ////////////////////////
 ///Constructor /////////
@@ -34,12 +38,12 @@ Magnificator::Magnificator(std::vector<Mat> *pBuffer,
     imgProcFlags(imageProcFlags),
     imgProcSettings(imageProcSettings),
     currentFrame(0)
-{
-    levels = 4;
-    exaggeration_factor = 2.f;
-    lambda = 0;
-    delta = 0;
-}
+    {
+        levels = 4;
+        exaggeration_factor = 2.f;
+        lambda = 0;
+        delta = 0;
+    }
 Magnificator::~Magnificator()
 {
     clearBuffer();
@@ -67,6 +71,7 @@ int Magnificator::calculateMaxLevels(Size s)
 ////////////////////////
 ///Magnification ///////
 ////////////////////////
+/// prevAvg
 void Magnificator:: colorMagnify() {
     int pBufferElements = processingBuffer->size();
     // Magnify only when processing buffer holds new images
@@ -143,6 +148,61 @@ void Magnificator:: colorMagnify() {
     }
 }
 
+
+// type2str source: https://stackoverflow.com/questions/10167534/how-to-find-out-what-type-of-a-mat-object-is-with-mattype-in-opencv
+// Usage:
+//            string ty =  type2str( prevFrame.type() );
+//            printf("Matrix: %s %dx%d \n", ty.c_str(), prevFrame.cols, prevFrame.rows );
+string type2str(int type) {
+  string r;
+
+  uchar depth = type & CV_MAT_DEPTH_MASK;
+  uchar chans = 1 + (type >> CV_CN_SHIFT);
+
+  switch ( depth ) {
+    case CV_8U:  r = "8U"; break;
+    case CV_8S:  r = "8S"; break;
+    case CV_16U: r = "16U"; break;
+    case CV_16S: r = "16S"; break;
+    case CV_32S: r = "32S"; break;
+    case CV_32F: r = "32F"; break;
+    case CV_64F: r = "64F"; break;
+    default:     r = "User"; break;
+  }
+
+  r += "C";
+  r += (chans+'0');
+
+  return r;
+}
+
+int buff[30];
+int front = 0;
+int back = 0;
+void circBuffInsert(int input) {
+    buff[front++] = input;
+    front %= 30;
+}
+
+
+int circBuffLength() {
+   return front;
+}
+
+int circBuffAvg() {
+    int temp = 0;
+    for (int i = 0; i <= front; i++) {
+        temp += buff[i];
+    }
+    int tempfront = front;
+    if (tempfront == 0) {
+        tempfront = 1;
+    }
+    return temp /= tempfront;
+
+}
+
+int prevAvgContoursSum = 0; // todo fix this
 void Magnificator::laplaceMagnify() {
     int pBufferElements = processingBuffer->size();
     // Magnify only when processing buffer holds new images
@@ -152,7 +212,7 @@ void Magnificator::laplaceMagnify() {
 //    levels = DEFAULT_LAP_MAG_LEVELS;
     levels = imgProcSettings->levels;
 
-    Mat input, output, motion, hsvimg, labimg;
+    Mat input, output, motion, hsvimg, labimg, newestMotion, preparedFrame;
     vector<Mat> inputPyramid;
     int pChannels;
 
@@ -160,8 +220,15 @@ void Magnificator::laplaceMagnify() {
     while(currentFrame < pBufferElements) {
         // Grab oldest frame from processingBuffer and delete it to save memory
         input = processingBuffer->front().clone();
-        if(currentFrame > 0)
-            processingBuffer->erase(processingBuffer->begin());
+        if(currentFrame == 0) {
+            prevFrame = input; // save first raw input as prevFrame (for motion)
+        }
+
+            else {
+                processingBuffer->erase(processingBuffer->begin()); // delete oldest frame
+//                cv::imshow("First", prevFrame); // NOTE using imshow does not close the program.
+        }
+
 
         // Convert input image to 32bit float
         pChannels = input.channels();
@@ -208,8 +275,11 @@ void Magnificator::laplaceMagnify() {
             }
         }
 
+        // Motion is nothing up until this point
         /* 4. RECONSTRUCT MOTION IMAGE FROM PYRAMID */
         buildImgFromLaplacePyr(motionPyramid, levels, motion);
+
+
 
         /* 5. ATTENUATE (if not grayscale) */
         attenuate(motion, motion);
@@ -236,6 +306,7 @@ void Magnificator::laplaceMagnify() {
         if(currentFrame > 0) {
 //            output = input+motion; // used in original
              output = motion;
+//            output = hsvimg;
         }
         else
             output = input;
@@ -250,20 +321,253 @@ void Magnificator::laplaceMagnify() {
             output.convertTo(output, CV_8UC1, 255.0, 1.0/255.0);
         }
 
-        // Fill internal buffer with magnified image
+//        cv::imshow("First", output);
+
+        // detect motion between input and prevFrame. on 2nd+ frame. Then set prevFrame to input.
+        // based upon https://towardsdatascience.com/image-analysis-for-beginners-creating-a-motion-detector-with-opencv-4ca6faba4b42
+        // Make this < 0 and edit above currentFrame >0 to original if want to just see original.
+        if (currentFrame > 0) {
+
+            newestMotion = output;
+
+
+            // convert prevFrame
+            cvtColor(prevFrame, prevFrame, cv::COLOR_BGR2GRAY);
+            cv::GaussianBlur(prevFrame, prevFrame, Size(5,5), 0, 0);
+            prevFrame.convertTo(prevFrame, CV_8UC1, 255.0, 1.0/255.0);
+
+            // convert newestMotion as a gray of output
+            cvtColor(output, newestMotion, cv::COLOR_BGR2GRAY);
+            cv::GaussianBlur(newestMotion, newestMotion, Size(5,5), 0, 0);
+
+            preparedFrame = prevFrame;
+
+//            printf("%d AND %d AND %d", newestMotion.size(), prevFrame.size(), preparedFrame.size());
+//            cv::imshow("first", newestMotion);
+
+
+            // Dif between previous, raw frame and newst output frame
+            cv::absdiff(prevFrame, newestMotion, preparedFrame);
+
+
+            Mat one = Mat::ones(2, 2, CV_8UC1);
+
+            cv::dilate(preparedFrame, preparedFrame, one, Point(-1,-1), 1);
+
+            Mat threshFrame;
+            cv::threshold(preparedFrame, threshFrame, 20, 255, cv::THRESH_BINARY); // 20, 255 are the thresholds.
+
+            bitwise_not(threshFrame, threshFrame); // invert image so foreground is white, background is black. (contours detct white on black)
+
+            // threshold frame honestly looks pretty good, if can find countours in that then do area from the tutorial, etc.
+            output = threshFrame; // Set the output to threshold frame.
+
+            cvtColor(output, output, cv::COLOR_GRAY2BGR);
+//            cv::imshow("BGR", output); // here it's white and black, looks pretty decent.
+
+
+
+
+            //            cvtColor(output, output, cv::COLOR_BGR2HSV);
+//            cv::imshow("HSV", output); // why is it red?
+
+            // TODO: maybe do some bluring for noise reduction? as in https://docs.opencv.org/3.4/da/d0c/tutorial_bounding_rects_circles.html
+
+
+
+            // contours approach below
+            vector<vector<Point>> contours;
+            cv::findContours(threshFrame, contours, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_TC89_L1); // maybe experiment w/ diff modes
+            // like CV_RETR_EXTERNAL might help a TON.
+
+            Mat finalFrame = Mat::zeros(720, 1280, CV_8UC3); // don't remember why this is here and why it's 8UC3 not 8UC1.
+//            Mat finalFrame;
+
+
+
+
+
+            cv::drawContours(finalFrame, contours, -1, Scalar(0,255,0), 2, cv::LINE_AA);
+
+
+            output = finalFrame; // this is the frame after contours have been added.
+
+
+//             WORKS! TODO: If tehre are a few high contours, definitely not breathing but it thinks it is.
+            // So, need to exclude if there are few contours.
+            // Taking average y of contour vs the minimu of contour doesn't change anything.
+            // TODO: Only interested in contours that move a lot and stay around.
+            cout << "Calculating contours... " << endl;
+            int numContours = contours.size();
+
+            int contoursSum = 0;
+            for (size_t i = 0; i < numContours; i++) {
+//                cout << contours[i] << endl; // Contours is a vector of contours(which are stored as point vectors)
+
+                vector<Point> pont = contours[i]; // pont is a contour defined as a vector consistuing of multiple points.
+//                cout << "Vector: " << contours[i] << end;
+                int vectorSum = 0;
+                for (size_t j = 0; j < pont.size(); j++) {
+                     vectorSum += pont[j].y; // average
+//                    if (pont[j].y < vectorSum) { // minimum
+//                        vectorSum = pont[j].y;
+//                    }
+                }
+                vectorSum /= pont.size(); // comment out for minimum.
+//                cout << "Avg vector contour y-value: " << vectorSum << endl; // this is a vector containing points of a contour
+                contoursSum += vectorSum;
+            }
+            if (numContours==0) {
+                contoursSum = 0;
+            } else {
+                contoursSum = contoursSum / numContours; // why does this crash program? Can divide by 2 but not by w. THis is ag contorus.
+            }
+
+
+            // TODO: If there are many contours, that have changed are breathing. Need a way to do this.
+            // next steps
+            // This is because now if you hold breath, someimtes 1-10 contours pop up higher or lower, so then it thinks it's a breath.
+            // TODO: also includ esome sort of time-based thing, might not want/need to check every frame if the contours have moved.
+
+            cout << "Avg contours y-value: " << contoursSum << " " << numContours << " Contours. " << endl;
+
+
+            // write avg contours file to csv
+            QFile file("out.csv");
+            if (file.open(QIODevice::WriteOnly | QIODevice::Append)); {
+                if(!file.isOpen())
+                {
+                    //alert that file did not open
+                    cout << "Couldn't open file";
+                }
+
+                QTextStream outStream(&file);
+                outStream << contoursSum << "\n";
+
+                file.close();
+            }
+
+
+
+
+
+
+
+            // set initial prevavgcontourssum if first frame.
+            if (currentFrame == 0) {
+                prevAvgContoursSum = contoursSum;
+//                prevNumContours = numContours;
+            }
+//            char print[20];
+//            // if avg contours have moved up
+            // if most contours have moved.
+            std::string txt;
+            if (contoursSum - prevAvgContoursSum > 10) {
+                circBuffInsert(20);
+//                txt = "INHALE. " + std::to_string(contoursSum) ;
+            }
+            // else if avg contours have moved down
+            else if (contoursSum - prevAvgContoursSum < -10) {
+//                txt = "EXHALE. " + std::to_string(contoursSum) ;
+                circBuffInsert(10);
+            } else {
+//                txt = "NOTHIN. " + std::to_string(contoursSum) ;
+                circBuffInsert(0);
+            }
+//            cout << print;
+            int temp = circBuffAvg();
+            if (temp > 15) {
+                txt = "INHALE. " + std::to_string(circBuffLength()) ;
+            }
+            else if (temp < 15 && temp > 5) {
+                txt = "EXHALE. " + std::to_string(contoursSum) ;
+            }
+
+
+//                else {
+//                txt = "NOTHIN. " + std::to_string(contoursSum) ;
+//            }
+            prevAvgContoursSum = contoursSum;
+
+            cv::putText(output, //target image
+                        txt, //text
+                        cv::Point(10, output.rows / 2), //top-left position
+                        cv::FONT_HERSHEY_DUPLEX,
+                        1.0,
+                        CV_RGB(118, 185, 0), //font color
+                        2);
+
+
+
+
+            // HULL - is interesting. Like approximates/ connects contours.
+//            vector<vector<Point> >hull( contours.size() );
+//            for( size_t i = 0; i < contours.size(); i++ )
+//            {
+//                cv::convexHull( contours[i], hull[i] );
+//            }
+//            cv::drawContours(finalFrame, hull, -1, Scalar(255,0,0), 2, cv::LINE_AA);
+
+
+            // don't work below here.
+//            cout << endl << "Contour size: " << contours.size() << endl;
+            // attempt to get contour's coordinates
+//            vector<Point> fifthcontour = contours[0]; // crashes???? why??? out of range?
+
+//            for (int i = 0; i < fifthcontour.size(); i++) {
+//                Point coordinate_i_ofcontour = fifthcontour[i];
+//                cout << endl << "contour with coordinates: x = " << coordinate_i_ofcontour.x << " y = " << coordinate_i_ofcontour.y;
+//            }
+
+
+
+//            finalFrame.convertTo(finalFrame, CV_8UC1, 255.0, 1.0/255.0); // useless thing here.
+
+//            cv::imshow("Window", finalFrame);
+//            magnifiedBuffer.push_back(finalFrame);
+
+
+            // Get coords of contours
+//            for (int i = 0; i < countours; i++) {
+
+//            }
+
+//            contours.resize(contours0.size());
+//            for( size_t k = 0; k < contours.size(); k++ ) {
+//                vector<Point> curcontour = contours.at(k);
+//                for (int i = 0; i < curcontour.size(); i++) {
+//                    Point contPoint = curcontour[i];
+//                            cout << endl << "Current y value" << contPoint << endl;
+//                }
+//            }
+
+//            vector<vector<Point>> contoursFin;
+//            for( size_t k = 0; k < contours.size(); k++ ) {
+//                cv::approxPolyDP(Mat(contours[k]), contoursFin[k], 3, true);
+//            }
+
+
+            prevFrame = input;
+
+
+        }
+
 
         // Make string to display on image (for convenience)
-        sprintf(str, "%d", x); // green values string
+//        sprintf(str, print); // green values string
+//        sprintf(str, "%d", currentFrame); // current frame (first frame is 0, rest are 1.)
+
 
         // Put that string on the output
-        cv::putText(output, //target image
-                    str, //text
-                    cv::Point(10, output.rows / 2), //top-left position
-                    cv::FONT_HERSHEY_DUPLEX,
-                    1.0,
-                    CV_RGB(118, 185, 0), //font color
-                    2);
-
+//        cv::putText(output, //target image
+//                    str, //text
+//                    cv::Point(10, output.rows / 2), //top-left position
+//                    cv::FONT_HERSHEY_DUPLEX,
+//                    1.0,
+//                    CV_RGB(118, 185, 0), //font color
+//                    2);
+//        printf("Current frame: %d", currentFrame);
+        // Fill internal buffer with magnified image
         magnifiedBuffer.push_back(output);
         ++currentFrame;
     }

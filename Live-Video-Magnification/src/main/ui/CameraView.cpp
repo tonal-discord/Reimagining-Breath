@@ -353,7 +353,7 @@ void CameraView::updateMouseCursorPosLabelOriginalFrame()
                                      QString(")"));
 
     // Show pixel cursor position if camera is connected (image is being shown)
-    if(!originalFrame->pixmap().isNull())
+    if(!originalFrame->pixmap().isNull()) 
     {
         // Scaling factor calculation depends on whether frame is scaled to fit label or not
         if(!originalFrame->hasScaledContents())

@@ -7,11 +7,11 @@
 *.la
 *.lai
 *.so
-*.dll
+# *.dll
 *.dylib
 
 # Qt-es
-
+./Live-Video-Magnification/build-rvm-Desktop_Qt_6_4_2_MinGW_64_bit-Release
 /.qmake.cache
 /.qmake.stash
 *.pro.user
@@ -30,3 +30,6 @@ Makefile*
 #QtCtreator Qml
 *.qmlproject.user
 *.qmlproject.user.*
+*.idx
+Live-Video-Magnification/build-rvm-Desktop_Qt_6_4_2_MinGW_64_bit-Release/UsersTylerAppDataLocalTemptmpfi41l3jd
+Live-Video-Magnification/opencv.zip

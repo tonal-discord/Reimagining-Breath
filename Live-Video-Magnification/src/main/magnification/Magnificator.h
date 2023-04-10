@@ -27,12 +27,14 @@
 // Qt
 #include "QList"
 #include "QTime"
+#include "QFile"
 #include <qdebug.h>
 // OpenCV
 #include "opencv2/opencv.hpp"
 #include "opencv2/core/core.hpp"
 #include "opencv2/imgproc/imgproc.hpp"
 #include "opencv2/highgui/highgui.hpp"
+#include <opencv2/core/mat.hpp> // didn't fix it?
 // Local
 #include "main/magnification/SpatialFilter.h"
 #include "main/magnification/TemporalFilter.h"
@@ -55,9 +57,9 @@ using namespace std;
 class Magnificator
 {
 public:
-    //////////////////////// 
-    ///Magnification /////// 
-    //////////////////////// 
+    ////////////////////////
+    ///Magnification ///////
+    ////////////////////////
     /*!
      * \brief Magnificator Constructor for this class.
      * \param pBuffer Pointer to a processing buffer (preferably with
@@ -68,7 +70,7 @@ public:
      * \param imageProcSettings Pointer to the Settings for magnification. These settings can be changed during
      *  the magnification process
      */
-    Magnificator(vector<Mat> *pBuffer = 0,
+    Magnificator(vector<cv::Mat> *pBuffer = 0,
                  struct ImageProcessingFlags *imageProcFlags = 0,
                  struct ImageProcessingSettings *imageProcSettings = 0);
     ~Magnificator();
@@ -95,7 +97,7 @@ public:
 
     ////////////////////////
     ///Magnified Buffer ///
-    //////////////////////// 
+    ////////////////////////
     /*!
      * \brief getFrameLast Returns the last/newest magnified image. After that, the first/oldest frame is deleted.
      * \return A Mat with the same size like the images in the provided processingBuffer.
@@ -124,9 +126,9 @@ public:
 
     bool hasFrame();
 
-    //////////////////////// 
-    ///Processing Buffer // 
-    //////////////////////// 
+    ////////////////////////
+    ///Processing Buffer //
+    ////////////////////////
     /*!
      * \brief getOptimalBufferSize Used to calculate buffer and cache size for color magnification.
      *  Best results with ~2 seconds film material and a size that is a power of 2.
@@ -142,9 +144,9 @@ private:
      */
     vector<Mat> *processingBuffer;
 
-    //////////////////////// 
-    ///External Settings // 
-    //////////////////////// 
+    ////////////////////////
+    ///External Settings //
+    ////////////////////////
     /*!
      * \brief imgProcFlags Pointer to processing flags, given in constructor. Effectively used to
      *  indicate grayscale mode.
@@ -156,9 +158,9 @@ private:
      */
     ImageProcessingSettings *imgProcSettings;
 
-    //////////////////////// 
-    ///Internal Settings // 
-    //////////////////////// 
+    ////////////////////////
+    ///Internal Settings //
+    ////////////////////////
     /*!
      * \brief delta (Motion magnification) Calculated by cutoff wavelength and amplification.
      */
@@ -183,9 +185,9 @@ private:
      */
     int levels;
 
-    //////////////////////// 
-    ///Cache ///////// /////// 
-    //////////////////////// 
+    ////////////////////////
+    ///Cache ///////// ///////
+    ////////////////////////
     /*!
      * \brief magnifiedBuffer (Both) Holds magnified images, that are not yet given to the GUI.
      */
@@ -205,6 +207,11 @@ private:
      * \brief lowpassLo (Motion magnification) Holds image pyramid of lowpassed current frame with
      *  low cutoff
      */
+    Mat prevFrame;
+    /*!
+     * \brief prevFrame (Motion magnification) Holds previous frame to detect motion.
+     */
+
     vector<Mat> lowpassLo;
     /*!
      * \brief downSampledMat (Color magnification) Holds 2*fps rounded to next power of 2
@@ -217,9 +224,9 @@ private:
     std::shared_ptr<RieszTemporalFilter> loCutoff;
     std::shared_ptr<RieszTemporalFilter> hiCutoff;
 
-    //////////////////////// 
+    ////////////////////////
     ///Postprocessing //////
-    //////////////////////// 
+    ////////////////////////
     /*!
      * \brief amplifyLaplacian (Motion magnification) Amplifies a Laplacian image pyramid.
      * \param src Source image.
