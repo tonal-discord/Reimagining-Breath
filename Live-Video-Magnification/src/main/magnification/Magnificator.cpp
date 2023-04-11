@@ -211,6 +211,7 @@ void Magnificator::laplaceMagnify() {
     // Number of levels in pyramid
 //    levels = DEFAULT_LAP_MAG_LEVELS;
     levels = imgProcSettings->levels;
+    cout << "LEVELS: " + std::to_string(levels);
 
     Mat input, output, motion, hsvimg, labimg, newestMotion, preparedFrame;
     vector<Mat> inputPyramid;
@@ -380,7 +381,11 @@ void Magnificator::laplaceMagnify() {
             cv::findContours(threshFrame, contours, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_TC89_L1); // maybe experiment w/ diff modes
             // like CV_RETR_EXTERNAL might help a TON.
 
-            Mat finalFrame = Mat::zeros(720, 1280, CV_8UC3); // don't remember why this is here and why it's 8UC3 not 8UC1.
+//            ImageProcessingSettings
+
+//            int h = input.size().height;;
+//            Mat finalFrame = Mat::zeros(imgProcSettings->frameHeight, imgProcSettings->frameWidth, CV_8UC3); // don't remember why this is here and why it's 8UC3 not 8UC1.
+            Mat finalFrame = Mat::zeros(input.size().height, input.size().width, CV_8UC3); // don't remember why this is here and why it's 8UC3 not 8UC1.
 //            Mat finalFrame;
 
 
@@ -581,6 +586,7 @@ void Magnificator::rieszMagnify()
         return;
     // Number of levels in pyramid
     levels = imgProcSettings->levels;
+
 
     Mat buffer_in, input, magnified, output;
     std::vector<cv::Mat> channels;

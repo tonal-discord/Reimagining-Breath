@@ -1,15 +1,14 @@
 ## [Live Video Magnification](https://github.com/tschnz/Live-Video-Magnification)
 
 TODOs: 
-- Fix webcam image frame being shifted/scaled.
-  - In code I did things with just 1280x720.
-  - If you select a region by dragging on webcam preview for example, the output is messed up.
-- Make it detect breathing better 
-  - Just have very basic motion/edge tracking, should be improved.
-  - Calibration stage would help a lot (maybe user holds breath or breathes to max/min or something.)
 
-- Automatically crop/zoom webcam (worst case, you can drag the webcam image and it selects an area.)
-- Fix video input? (easier to test)
+1. Make it detect breathing better 
+  	- Just have very basic motion/edge tracking, should be improved.
+ 	 - Calibration stage would help a lot? (maybe user holds breath or breathes to max/min or something.)
+
+2. Automatically crop/zoom webcam 
+	- Currently, you can drag mouse on input video to select a region. Can do this manually worst case scenario.
+
 
 
 C++ realtime(almost) camera magnification.

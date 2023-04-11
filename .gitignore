@@ -33,3 +33,5 @@ Makefile*
 *.idx
 Live-Video-Magnification/build-rvm-Desktop_Qt_6_4_2_MinGW_64_bit-Release/UsersTylerAppDataLocalTemptmpfi41l3jd
 Live-Video-Magnification/opencv.zip
+*.csv
+*.csv#

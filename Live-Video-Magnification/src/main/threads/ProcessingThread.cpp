@@ -73,9 +73,12 @@ bool ProcessingThread::releaseCapture()
         return false;
 }
 
+int frameNum = 0;
 void ProcessingThread::run()
 {
     qDebug() << "Starting processing thread...";
+//    timer.start(); do that here should work. Not sure if should emit it and make a signal, make it public, or what.
+    // maybe reset timer before starting (if it was already going.)?
     while(1)
     {
         ////////////////////////// /////// 
@@ -96,6 +99,7 @@ void ProcessingThread::run()
         processingTime=t.elapsed();
         // Start timer (used to calculate processing rate)
         t.start();
+
 
         processingMutex.lock();
         // Get frame from queue, store in currentFrame, set ROI
@@ -122,25 +126,42 @@ void ProcessingThread::run()
            {
                magnificator.colorMagnify();
                currentFrame = magnificator.getFrameLast();
+               frameNum++;
            }
            else if(imgProcFlags.laplaceMagnifyOn)
 
            {
                magnificator.laplaceMagnify();
                currentFrame = magnificator.getFrameLast();
+               frameNum++;
            }
            else if(imgProcFlags.rieszMagnifyOn)
            {
                magnificator.rieszMagnify();
                currentFrame = magnificator.getFrameLast();
+               frameNum++;
            }
-           else
+           else {
                processingBuffer.erase(processingBuffer.begin());
+               frameNum = 0;
+           }
        }
 
         ////////////////////////// ///////// // 
         // PERFORM IMAGE PROCESSING ABOVE // 
         ////////////////////////// ///////// // 
+
+       // add text of frame number to image.
+//       std::string txt;
+//       txt = "EXHALE. " + std::to_string(contoursSum) ;
+                   cv::putText(currentFrame, //target image
+                               "FRAMENUM " + std::to_string(frameNum) , //text
+                               cv::Point(10, currentFrame.rows / 4), //top-left position
+                               cv::FONT_HERSHEY_DUPLEX,
+                               1.0,
+                               CV_RGB(118, 185, 0), //font color
+                               2);
+
 
         // Convert Mat to QImage
         frame=MatToQImage(currentFrame);
@@ -182,6 +203,7 @@ void ProcessingThread::run()
         emit updateStatisticsInGUI(statsData);
     }
     qDebug() << "Stopping processing thread...";
+
 }
 
 void ProcessingThread::fillProcessingBuffer()

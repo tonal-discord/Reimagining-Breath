@@ -185,6 +185,8 @@ private:
      */
     int levels;
 
+    int width;
+
     ////////////////////////
     ///Cache ///////// ///////
     ////////////////////////
@@ -246,6 +248,7 @@ private:
      * \param dst Amplified image.
      */
     void amplifyGaussian(const Mat &src, Mat &dst);
+
 
 };
 
