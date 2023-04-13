@@ -164,6 +164,7 @@ void PlayerThread::run()
         else if(imgProcFlags.laplaceMagnifyOn)
         {
             magnificator.laplaceMagnify();
+            frameNum++;
             if(magnificator.hasFrame())
             {
                 currentFrame = magnificator.getFrameFirst();
@@ -178,6 +179,7 @@ void PlayerThread::run()
             }
         }
         else {
+            frameNum = 0;
             // Read frames unmagnified
             currentFrame = processingBuffer.at(getCurrentReadIndex());
             // Erase to keep buffer size
@@ -186,11 +188,21 @@ void PlayerThread::run()
         // Increase number of frames given to GUI
         currentWriteIndex++;
 
+
+        cv::putText(currentFrame, //target image
+                    "FRAMENUM " + std::to_string(frameNum) , //text
+                    cv::Point(10, currentFrame.rows / 4), //top-left position
+                    cv::FONT_HERSHEY_DUPLEX,
+                    1.0,
+                    CV_RGB(118, 185, 0), //font color
+                    2);
         frame = MatToQImage(currentFrame);
         if(emitOriginal) {
             originalFrame = MatToQImage(originalBuffer.front());
-            if(!originalBuffer.empty())
+            if(!originalBuffer.empty()) {
                 originalBuffer.erase(originalBuffer.begin());
+                frameNum = 0;
+            }
         }
 
         processingMutex.unlock();

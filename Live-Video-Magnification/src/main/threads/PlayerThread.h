@@ -124,6 +124,7 @@ private:
         Magnificator magnificator;
         std::vector<Mat> processingBuffer;
         int processingBufferLength;
+        int frameNum = 0;
 
 
 protected:

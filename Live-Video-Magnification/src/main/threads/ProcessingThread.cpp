@@ -154,13 +154,13 @@ void ProcessingThread::run()
        // add text of frame number to image.
 //       std::string txt;
 //       txt = "EXHALE. " + std::to_string(contoursSum) ;
-                   cv::putText(currentFrame, //target image
-                               "FRAMENUM " + std::to_string(frameNum) , //text
-                               cv::Point(10, currentFrame.rows / 4), //top-left position
-                               cv::FONT_HERSHEY_DUPLEX,
-                               1.0,
-                               CV_RGB(118, 185, 0), //font color
-                               2);
+       cv::putText(currentFrame, //target image
+                   "FRAMENUM " + std::to_string(frameNum) , //text
+                   cv::Point(10, currentFrame.rows / 4), //top-left position
+                   cv::FONT_HERSHEY_DUPLEX,
+                   1.0,
+                   CV_RGB(118, 185, 0), //font color
+                   2);
 
 
         // Convert Mat to QImage
@@ -169,7 +169,8 @@ void ProcessingThread::run()
         processingMutex.unlock();
 
         // Save the Stream
-        if(doRecord) { 
+        if(doRecord) {
+
             if(output.isOpened()) { 
                 if(captureOriginal) {
 

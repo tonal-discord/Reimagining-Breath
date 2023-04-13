@@ -35,3 +35,6 @@ Live-Video-Magnification/build-rvm-Desktop_Qt_6_4_2_MinGW_64_bit-Release/UsersTy
 Live-Video-Magnification/opencv.zip
 *.csv
 *.csv#
+Live-Video-Magnification/build-rvm-Desktop_Qt_6_4_2_MinGW_64_bit-Release/out.csv
+Live-Video-Magnification/README.md.backup
+Live-Video-Magnification/build-rvm-Desktop_Qt_6_4_2_MinGW_64_bit-Release/out.csv
