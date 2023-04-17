@@ -176,6 +176,7 @@ string type2str(int type) {
   return r;
 }
 
+// TODO make a nice class
 int buff[30];
 int front = 0;
 int back = 0;
@@ -202,7 +203,88 @@ int circBuffAvg() {
 
 }
 
+int buff2[10];
+int front2 = 0;
+int back2 = 0;
+int length2 = 0;
+void circBuffInsert2(int input) {
+    buff2[front2++] = input;
+    front2 %= 10;
+    length2++;
+}
+
+
+int circBuffLength2() {
+    return length2;
+}
+
+int circBuffAvg2() {
+    int temp = 0;
+    for (int i = 0; i <= front2; i++) {
+        temp += buff2[i];
+    }
+    int tempfront = front2;
+    if (tempfront == 0) {
+        tempfront = 1;
+    }
+    return temp /= tempfront;
+
+}
+
+int circBuffMax2() {
+    int temp = buff2[0];
+    for (int i = 0; i <= front2; i++) {
+        if (buff2[i] > temp) {
+            temp = buff2[i];
+        }
+    }
+
+    return temp;
+
+}
+
+int buff3[10];
+int front3 = 0;
+int back3 = 0;
+int length3 = 0;
+void circBuffInsert3(int input) {
+    buff3[front3++] = input;
+    front3 %= 10;
+    length3++;
+}
+
+
+int circBuffLength3() {
+    return length3;
+}
+
+int circBuffAvg3() {
+    int temp = 0;
+    for (int i = 0; i <= front3; i++) {
+        temp += buff3[i];
+    }
+    int tempfront = front3;
+    if (tempfront == 0) {
+        tempfront = 1;
+    }
+    return temp /= tempfront;
+
+}
+
+int circBuffMax3() {
+    int temp = buff3[0];
+    for (int i = 0; i <= front3; i++) {
+        if (buff3[i] > temp) {
+            temp = buff3[i];
+        }
+    }
+
+    return temp;
+
+}
+
 int prevAvgContoursSum = 0; // todo fix this
+int first = 1;
 void Magnificator::laplaceMagnify() {
     int pBufferElements = processingBuffer->size();
     // Magnify only when processing buffer holds new images
@@ -213,7 +295,7 @@ void Magnificator::laplaceMagnify() {
     levels = imgProcSettings->levels;
     cout << "LEVELS: " + std::to_string(levels);
 
-    Mat input, output, motion, hsvimg, labimg, newestMotion, preparedFrame;
+    Mat input, output, motion, hsvimg, labimg, newestMotion, preparedFrame, firstContours;
     vector<Mat> inputPyramid;
     int pChannels;
 
@@ -306,6 +388,7 @@ void Magnificator::laplaceMagnify() {
         /* 6. ADD MOTION TO ORIGINAL IMAGE */
         if(currentFrame > 0) {
 //            output = input+motion; // used in original
+
              output = motion;
 //            output = hsvimg;
         }
@@ -322,7 +405,7 @@ void Magnificator::laplaceMagnify() {
             output.convertTo(output, CV_8UC1, 255.0, 1.0/255.0);
         }
 
-//        cv::imshow("First", output);
+        cv::imshow("First", output);
 
         // detect motion between input and prevFrame. on 2nd+ frame. Then set prevFrame to input.
         // based upon https://towardsdatascience.com/image-analysis-for-beginners-creating-a-motion-detector-with-opencv-4ca6faba4b42
@@ -397,6 +480,13 @@ void Magnificator::laplaceMagnify() {
 
             output = finalFrame; // this is the frame after contours have been added.
 
+            // save the very first frame
+            if (first) {
+                firstContours = output;
+            } else {
+                output = finalFrame - firstContours;
+            }
+
 
 //             WORKS! TODO: If tehre are a few high contours, definitely not breathing but it thinks it is.
             // So, need to exclude if there are few contours.
@@ -406,27 +496,60 @@ void Magnificator::laplaceMagnify() {
             int numContours = contours.size();
 
             int contoursSum = 0;
-            for (size_t i = 0; i < numContours; i++) {
-//                cout << contours[i] << endl; // Contours is a vector of contours(which are stored as point vectors)
 
-                vector<Point> pont = contours[i]; // pont is a contour defined as a vector consistuing of multiple points.
-//                cout << "Vector: " << contours[i] << end;
-                int vectorSum = 0;
-                for (size_t j = 0; j < pont.size(); j++) {
-                     vectorSum += pont[j].y; // average
-//                    if (pont[j].y < vectorSum) { // minimum
-//                        vectorSum = pont[j].y;
-//                    }
+
+
+            vector<vector<Point>> tempContours = contours;
+
+
+                // Put 10 biggest contours in buf2. (TODO while probably not needed, just to be sure did it.
+
+            while (circBuffLength2() < 10 || circBuffLength3() < 10) {
+//                cout << "HI2" << endl; // it is in here
+//                cout << circBuffLength2() << endl;
+                for (int i = 0; i < numContours; i++) {
+                    // if contour length bigger, add to buffer.
+                    cout << "HI3" << endl;
+                    if (cv::arcLength(tempContours[i], 0) > circBuffMax2()) {
+                        cout << cv::arcLength(tempContours[i], 0) << endl;
+                        circBuffInsert2(cv::arcLength(tempContours[i], 0));
+                        circBuffInsert3(i); // index of 10 greatest contours.
+                    }
+
                 }
-                vectorSum /= pont.size(); // comment out for minimum.
-//                cout << "Avg vector contour y-value: " << vectorSum << endl; // this is a vector containing points of a contour
-                contoursSum += vectorSum;
             }
-            if (numContours==0) {
-                contoursSum = 0;
-            } else {
-                contoursSum = contoursSum / numContours; // why does this crash program? Can divide by 2 but not by w. THis is ag contorus.
-            }
+
+
+//            for (size_t i = 0; i < 10; i++) {
+//                int j = 0;
+
+////                cout << contours[i] << endl; // Contours is a vector of contours(which are stored as point vectors)
+//                vector<Point> pont = contours[buff3[j]]; // pont is a contour defined as a vector consistuing of multiple points.
+////                cout << "Vector: " << contours[i] << end;
+//                int vectorSum = 0;
+//                for (size_t j = 0; j < pont.size(); j++) {
+//                     vectorSum += pont[j].y; // average
+////                    if (pont[j].y < vectorSum) { // minimum
+////                        vectorSum = pont[j].y;
+////                    }
+//                }
+//                vectorSum /= pont.size(); // comment out for minimum.
+////                cout << "Avg vector contour y-value: " << vectorSum << endl; // this is a vector containing points of a contour
+//                contoursSum += vectorSum;
+//            }
+//            if (numContours==0) {
+//                contoursSum = 0;
+//            } else {
+//                contoursSum = contoursSum / numContours;
+//            }
+
+//            // If false positive (changed by over 200 pxls)
+//            if (abs(contoursSum - prevAvgContoursSum) > 200 && !first) {
+//                contoursSum = prevAvgContoursSum;
+//                if (first) {
+//                     first = 0;
+//                }
+//            }
 
 
             // TODO: If there are many contours, that have changed are breathing. Need a way to do this.
