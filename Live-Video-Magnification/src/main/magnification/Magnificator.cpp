@@ -38,6 +38,7 @@ Magnificator::Magnificator(std::vector<Mat> *pBuffer,
     processingBuffer(pBuffer),
     imgProcFlags(imageProcFlags),
     imgProcSettings(imageProcSettings),
+    numFrames(numFrames),
     currentFrame(0)
     {
         // Default magnification settings
@@ -45,6 +46,8 @@ Magnificator::Magnificator(std::vector<Mat> *pBuffer,
         exaggeration_factor = 2.f;
         lambda = 0;
         delta = 0;
+        if (numFrames != 0)
+            cout << "FRAM : " << *numFrames << endl; // TODO THIS WORKS, BUT NOT IN ThE CSV FILE.
     }
 Magnificator::~Magnificator()
 {
@@ -285,6 +288,8 @@ int circBuffMax3() {
 
 }
 
+bool compareContours(vector<Point> cont1, vector<Point> cont2) { return cv::arcLength(cont1, 0) > cv::arcLength(cont2, 0); }
+
 int prevAvgContoursSum = 0; // todo fix this
 int first = 1;
 void Magnificator::laplaceMagnify() {
@@ -477,9 +482,19 @@ void Magnificator::laplaceMagnify() {
 
 
 
+            // sort descending from largest contour.
+            std::sort(contours.begin(), contours.end(), compareContours);
 
-            cv::drawContours(finalFrame, contours, -1, Scalar(0,255,0), 2, cv::LINE_AA);
+            int numContours = contours.size();
+            // draw contours on Mat frame.
 
+            int desiredLongest = 20;
+            for (int i = 0; i < std::min(numContours, desiredLongest); i++) {
+                cv::drawContours(finalFrame, contours, i, Scalar(0,255,0), 2, cv::LINE_AA);
+            }
+
+
+            // TODO: try cv::medianBlur maybe to decrease noise
 
             output = finalFrame; // this is the frame after contours have been added.
 
@@ -495,35 +510,12 @@ void Magnificator::laplaceMagnify() {
             // So, need to exclude if there are few contours.
             // Taking average y of contour vs the minimu of contour doesn't change anything.
             // TODO: Only interested in contours that move a lot and stay around.
-            cout << "Calculating contours... " << endl;
-            int numContours = contours.size();
+
 
             int contoursSum = 0;
 
-
-
-            /* TOP 10 */
-//            vector<vector<Point>> tempContours = contours;
-//                // Put 10 biggest contours in buf2. (TODO while probably not needed, just to be sure did it.
-
-//            while (circBuffLength2() < 10 || circBuffLength3() < 10) {
-////                cout << "HI2" << endl; // it is in here
-////                cout << circBuffLength2() << endl;
-//                for (int i = 0; i < numContours; i++) {
-//                    // if contour length bigger, add to buffer.
-//                    cout << "HI3" << endl;
-//                    if (cv::arcLength(tempContours[i], 0) > circBuffMax2()) {
-//                        cout << cv::arcLength(tempContours[i], 0) << endl;
-//                        circBuffInsert2(cv::arcLength(tempContours[i], 0));
-//                        circBuffInsert3(i); // index of 10 greatest contours.
-//                    }
-
-//                }
-//            }
-            /* END TOP 10 */
-
-
-            for (size_t i = 0; i < numContours; i++) {
+            // Iterate through up to the desiredLongest largest contours.
+            for (size_t i = 0; i < std::min(numContours, desiredLongest); i++) {
 
 
 //                cout << contours[i] << endl; // Contours is a vector of contours(which are stored as point vectors)
@@ -540,13 +532,14 @@ void Magnificator::laplaceMagnify() {
 
                 contoursSum += vectorSum;
             }
+
             if (numContours==0) {
                 contoursSum = 0;
             } else {
-                contoursSum = contoursSum / numContours;
+                contoursSum = contoursSum / std::min(numContours, desiredLongest);
             }
 
-//            cout << "Avg contours y-value: " << contoursSum << " " << numContours << " Contours. " << endl;
+            cout << "Avg contours y-value: " << contoursSum << " " << std::min(numContours, desiredLongest) << " Contours. " << endl;
 
 //            // If false positive (changed by over 200 pxls)
 //            if (abs(contoursSum - prevAvgContoursSum) > 200 && !first) {
@@ -562,7 +555,9 @@ void Magnificator::laplaceMagnify() {
             // This is because now if you hold breath, someimtes 1-10 contours pop up higher or lower, so then it thinks it's a breath.
             // TODO: also includ esome sort of time-based thing, might not want/need to check every frame if the contours have moved.
 
+            // TODO: make frame num reset when you click stop in GUI (PlayerThread.cpp)
             // write avg contours file to csv
+//            cout << "FRAMES: w" << * *numFrames << endl;
             QFile file("out.csv");
             if (file.open(QIODevice::WriteOnly | QIODevice::Append)) {
                 if(!file.isOpen())
