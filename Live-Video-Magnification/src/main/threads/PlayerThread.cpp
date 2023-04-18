@@ -49,7 +49,8 @@ PlayerThread::PlayerThread(const std::string filepath, int width, int height, do
     fpsSum = 0;
     fpsQueue.clear();
 
-    this->magnificator = Magnificator(&processingBuffer, &imgProcFlags, &imgProcSettings);
+    frameNum = 0;
+    this->magnificator = Magnificator(&processingBuffer, &imgProcFlags, &imgProcSettings, &frameNum);
     this->cap = VideoCapture();
     currentWriteIndex = 0;
 }

@@ -96,6 +96,7 @@ class ProcessingThread : public QThread
         bool captureOriginal;
         Mat combineFrames(Mat &frame1, Mat &frame2);
         QMutex recordMutex;
+        int frameNum;
 
     protected:
         void run();
@@ -110,6 +111,7 @@ class ProcessingThread : public QThread
         void newFrame(const QImage &frame);
         void origFrame(const QImage &frame);
         void updateStatisticsInGUI(struct ThreadStatisticsData);
+        void sendNumFrames(int numFrames);
         void frameWritten(int frames);
         void maxLevels(int levels);
 };

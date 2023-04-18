@@ -33,12 +33,14 @@
 ////////////////////////
 Magnificator::Magnificator(std::vector<Mat> *pBuffer,
                            ImageProcessingFlags *imageProcFlags,
-                           ImageProcessingSettings *imageProcSettings) :
+                           ImageProcessingSettings *imageProcSettings,
+                           int *numFrames) :
     processingBuffer(pBuffer),
     imgProcFlags(imageProcFlags),
     imgProcSettings(imageProcSettings),
     currentFrame(0)
     {
+        // Default magnification settings
         levels = 4;
         exaggeration_factor = 2.f;
         lambda = 0;
@@ -293,7 +295,7 @@ void Magnificator::laplaceMagnify() {
     // Number of levels in pyramid
 //    levels = DEFAULT_LAP_MAG_LEVELS;
     levels = imgProcSettings->levels;
-    cout << "LEVELS: " + std::to_string(levels);
+//    cout << "LEVELS: " + std::to_string(levels);
 
     Mat input, output, motion, hsvimg, labimg, newestMotion, preparedFrame, firstContours;
     vector<Mat> inputPyramid;
@@ -370,7 +372,7 @@ void Magnificator::laplaceMagnify() {
 
 
 
-
+        /* OLD
         // cvtColor(output, hsvimg, cv::COLOR_BGR2HSV); // convert to HSV?
         // cvtColor(output, labimg, cv::COLOR_BGR2Lab); // convert to LAB?
 
@@ -382,7 +384,8 @@ void Magnificator::laplaceMagnify() {
         // Mat chann[3];
         // chann = cv::split(output, chann);
 
-        int x = motion.at<Vec3b>(10, 29)[0]; // Get green value of pixel 10,29
+//        int x = motion.at<Vec3b>(10, 29)[0]; // Get green value of pixel 10,29
+         */
         char str[8];
 
         /* 6. ADD MOTION TO ORIGINAL IMAGE */
@@ -405,7 +408,7 @@ void Magnificator::laplaceMagnify() {
             output.convertTo(output, CV_8UC1, 255.0, 1.0/255.0);
         }
 
-        cv::imshow("First", output);
+//        cv::imshow("First", output);
 
         // detect motion between input and prevFrame. on 2nd+ frame. Then set prevFrame to input.
         // based upon https://towardsdatascience.com/image-analysis-for-beginners-creating-a-motion-detector-with-opencv-4ca6faba4b42
@@ -499,49 +502,51 @@ void Magnificator::laplaceMagnify() {
 
 
 
-            vector<vector<Point>> tempContours = contours;
+            /* TOP 10 */
+//            vector<vector<Point>> tempContours = contours;
+//                // Put 10 biggest contours in buf2. (TODO while probably not needed, just to be sure did it.
+
+//            while (circBuffLength2() < 10 || circBuffLength3() < 10) {
+////                cout << "HI2" << endl; // it is in here
+////                cout << circBuffLength2() << endl;
+//                for (int i = 0; i < numContours; i++) {
+//                    // if contour length bigger, add to buffer.
+//                    cout << "HI3" << endl;
+//                    if (cv::arcLength(tempContours[i], 0) > circBuffMax2()) {
+//                        cout << cv::arcLength(tempContours[i], 0) << endl;
+//                        circBuffInsert2(cv::arcLength(tempContours[i], 0));
+//                        circBuffInsert3(i); // index of 10 greatest contours.
+//                    }
+
+//                }
+//            }
+            /* END TOP 10 */
 
 
-                // Put 10 biggest contours in buf2. (TODO while probably not needed, just to be sure did it.
+            for (size_t i = 0; i < numContours; i++) {
 
-            while (circBuffLength2() < 10 || circBuffLength3() < 10) {
-//                cout << "HI2" << endl; // it is in here
-//                cout << circBuffLength2() << endl;
-                for (int i = 0; i < numContours; i++) {
-                    // if contour length bigger, add to buffer.
-                    cout << "HI3" << endl;
-                    if (cv::arcLength(tempContours[i], 0) > circBuffMax2()) {
-                        cout << cv::arcLength(tempContours[i], 0) << endl;
-                        circBuffInsert2(cv::arcLength(tempContours[i], 0));
-                        circBuffInsert3(i); // index of 10 greatest contours.
-                    }
 
+//                cout << contours[i] << endl; // Contours is a vector of contours(which are stored as point vectors)
+                vector<Point> pont = contours[i]; // pont is a contour defined as a vector consistuing of multiple points.
+                int vectorSum = 0;
+
+                for (size_t j = 0; j < pont.size(); j++) {
+                     vectorSum += pont[j].y; // average y position of the vector
+//                    if (pont[j].y < vectorSum) { // minimum
+//                        vectorSum = pont[j].y;
+//                    }
                 }
+                vectorSum /= pont.size();
+
+                contoursSum += vectorSum;
+            }
+            if (numContours==0) {
+                contoursSum = 0;
+            } else {
+                contoursSum = contoursSum / numContours;
             }
 
-
-//            for (size_t i = 0; i < 10; i++) {
-//                int j = 0;
-
-////                cout << contours[i] << endl; // Contours is a vector of contours(which are stored as point vectors)
-//                vector<Point> pont = contours[buff3[j]]; // pont is a contour defined as a vector consistuing of multiple points.
-////                cout << "Vector: " << contours[i] << end;
-//                int vectorSum = 0;
-//                for (size_t j = 0; j < pont.size(); j++) {
-//                     vectorSum += pont[j].y; // average
-////                    if (pont[j].y < vectorSum) { // minimum
-////                        vectorSum = pont[j].y;
-////                    }
-//                }
-//                vectorSum /= pont.size(); // comment out for minimum.
-////                cout << "Avg vector contour y-value: " << vectorSum << endl; // this is a vector containing points of a contour
-//                contoursSum += vectorSum;
-//            }
-//            if (numContours==0) {
-//                contoursSum = 0;
-//            } else {
-//                contoursSum = contoursSum / numContours;
-//            }
+//            cout << "Avg contours y-value: " << contoursSum << " " << numContours << " Contours. " << endl;
 
 //            // If false positive (changed by over 200 pxls)
 //            if (abs(contoursSum - prevAvgContoursSum) > 200 && !first) {
@@ -557,12 +562,9 @@ void Magnificator::laplaceMagnify() {
             // This is because now if you hold breath, someimtes 1-10 contours pop up higher or lower, so then it thinks it's a breath.
             // TODO: also includ esome sort of time-based thing, might not want/need to check every frame if the contours have moved.
 
-            cout << "Avg contours y-value: " << contoursSum << " " << numContours << " Contours. " << endl;
-
-
             // write avg contours file to csv
             QFile file("out.csv");
-            if (file.open(QIODevice::WriteOnly | QIODevice::Append)); {
+            if (file.open(QIODevice::WriteOnly | QIODevice::Append)) {
                 if(!file.isOpen())
                 {
                     //alert that file did not open
@@ -570,15 +572,10 @@ void Magnificator::laplaceMagnify() {
                 }
 
                 QTextStream outStream(&file);
-                outStream << contoursSum << "\n";
+                outStream << *numFrames << "," << contoursSum << "\n";
 
                 file.close();
             }
-
-
-
-
-
 
 
             // set initial prevavgcontourssum if first frame.

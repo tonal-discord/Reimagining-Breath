@@ -72,7 +72,8 @@ public:
      */
     Magnificator(vector<cv::Mat> *pBuffer = 0,
                  struct ImageProcessingFlags *imageProcFlags = 0,
-                 struct ImageProcessingSettings *imageProcSettings = 0);
+                 struct ImageProcessingSettings *imageProcSettings = 0,
+                 int *numFrames = 0);
     ~Magnificator();
     /*!
      * \brief calculateMaxLevels Maximum levels an image pyramid can hold.
@@ -157,6 +158,8 @@ private:
      *  while runtime.
      */
     ImageProcessingSettings *imgProcSettings;
+
+    int *numFrames;
 
     ////////////////////////
     ///Internal Settings //
@@ -248,7 +251,6 @@ private:
      * \param dst Amplified image.
      */
     void amplifyGaussian(const Mat &src, Mat &dst);
-
 
 };
 

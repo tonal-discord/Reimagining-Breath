@@ -40,9 +40,9 @@ ProcessingThread::ProcessingThread(SharedImageBuffer *sharedImageBuffer, int dev
     statsData.averageFPS=0;
     statsData.nFramesProcessed=0;
     captureOriginal = false;
-
+    frameNum = 0;
     this->processingBufferLength = 2;
-    this->magnificator = Magnificator(&processingBuffer, &imgProcFlags, &imgProcSettings);
+    this->magnificator = Magnificator(&processingBuffer, &imgProcFlags, &imgProcSettings, &frameNum);
     this->output = VideoWriter();
 }
 
@@ -73,7 +73,7 @@ bool ProcessingThread::releaseCapture()
         return false;
 }
 
-int frameNum = 0;
+
 void ProcessingThread::run()
 {
     qDebug() << "Starting processing thread...";
@@ -202,6 +202,7 @@ void ProcessingThread::run()
         statsData.nFramesProcessed++;
         // Inform GUI of updated statistics
         emit updateStatisticsInGUI(statsData);
+
     }
     qDebug() << "Stopping processing thread...";
 
