@@ -23,7 +23,7 @@
 /************************************************************************************/
 
 #include "main/threads/ProcessingThread.h"
-#define BUF_SIZE 256
+
 
 ProcessingThread::ProcessingThread(SharedImageBuffer *sharedImageBuffer, int deviceNumber) : QThread(),
     sharedImageBuffer(sharedImageBuffer),
@@ -80,8 +80,48 @@ void ProcessingThread::run()
     qDebug() << "Starting processing thread...";
     //    timer.start(); do that here should work. Not sure if should emit it and make a signal, make it public, or what.
     // maybe reset timer before starting (if it was already going.)?
+
+    // Shared memory init
     HANDLE hMapFile;
     LPCTSTR pBuf;
+
+    int temp = magnificator.breathMeasureOutput;
+    int *point2;
+    point2 = &temp;
+
+
+    TCHAR szName[]=TEXT("ReimaginingBreath");
+    TCHAR szMsg[]=TEXT("YOssage from first process.");
+
+
+    hMapFile = CreateFileMapping(
+        INVALID_HANDLE_VALUE,    // use paging file
+        NULL,                    // default security
+        PAGE_READWRITE,          // read/write access
+        0,                       // maximum object size (high-order DWORD)
+        BUF_SIZE,                // maximum object size (low-order DWORD)
+        szName);                 // name of mapping object
+
+    if (hMapFile == NULL)
+    {
+        _tprintf(TEXT("Could not create file mapping object (%d).\n"),
+                 GetLastError());
+    }
+    pBuf = (LPTSTR) MapViewOfFile(hMapFile,   // handle to map object
+                                  FILE_MAP_ALL_ACCESS, // read/write permission
+                                  0,
+                                  0,
+                                  BUF_SIZE);
+
+    if (pBuf == NULL)
+    {
+        _tprintf(TEXT("Could not map view of file (%d).\n"),
+                 GetLastError());
+
+        CloseHandle(hMapFile);
+    }
+
+    // end shared memory init
     while(1)
     {
         ////////////////////////// ///////
@@ -206,51 +246,10 @@ void ProcessingThread::run()
         // Inform GUI of updated statistics
         emit updateStatisticsInGUI(statsData);
 
-    int temp = magnificator.breathMeasureOutput;
-    int *point2;
-    point2 = &temp;
-
-
-    TCHAR szName[]=TEXT("ReimaginingBreath");
-    TCHAR szMsg[]=TEXT("YOssage from first process.");
-
-
-        hMapFile = CreateFileMapping(
-            INVALID_HANDLE_VALUE,    // use paging file
-            NULL,                    // default security
-            PAGE_READWRITE,          // read/write access
-            0,                       // maximum object size (high-order DWORD)
-            BUF_SIZE,                // maximum object size (low-order DWORD)
-            szName);                 // name of mapping object
-
-        if (hMapFile == NULL)
-        {
-            _tprintf(TEXT("Could not create file mapping object (%d).\n"),
-                     GetLastError());
-        }
-        pBuf = (LPTSTR) MapViewOfFile(hMapFile,   // handle to map object
-                                      FILE_MAP_ALL_ACCESS, // read/write permission
-                                      0,
-                                      0,
-                                      BUF_SIZE);
-
-        if (pBuf == NULL)
-        {
-            _tprintf(TEXT("Could not map view of file (%d).\n"),
-                     GetLastError());
-
-            CloseHandle(hMapFile);
-        }
-
-
-
+        temp = magnificator.breathMeasureOutput;
 
         CopyMemory((PVOID)pBuf, point2, sizeof(int));
         // _getch();
-
-
-
-
     }
 
     UnmapViewOfFile(pBuf);

@@ -24,9 +24,20 @@
 
 #ifndef PLAYERTHREAD_H
 #define PLAYERTHREAD_H
+#define BUF_SIZE 256
 
 // C++
 #include <cmath>
+// Windows/C++
+#include <windows.h>
+#include <stdio.h>
+#include <conio.h>
+#include <tchar.h>
+#include <memoryapi.h>
+#include <handleapi.h>
+#include <iostream>
+#include <WinNT.h>
+
 // Qt
 #include <QtCore/QThread>
 #include <QFile>

@@ -24,6 +24,7 @@
 
 #ifndef PROCESSINGTHREAD_H
 #define PROCESSINGTHREAD_H
+#define BUF_SIZE 256
 // Windows/C++
 #include <windows.h>
 #include <stdio.h>

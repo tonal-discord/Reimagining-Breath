@@ -488,7 +488,7 @@ void Magnificator::laplaceMagnify() {
             int numContours = contours.size();
             // draw contours on cv::Mat frame.
 
-            int desiredLongest = 25;
+            int desiredLongest = 50;
             for (int i = 0; i < std::min(numContours, desiredLongest); i++) {
                 cv::drawContours(finalFrame, contours, i, cv::Scalar(0,255,0), 2, cv::LINE_AA);
             }

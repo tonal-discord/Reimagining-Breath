@@ -74,6 +74,48 @@ void PlayerThread::run()
     qDebug() << "Starting player thread...";
     QElapsedTimer mTime;
 
+    // Shared memory init
+    HANDLE hMapFile;
+    LPCTSTR pBuf;
+
+    int temp;
+    int *point2;
+    point2 = &temp;
+
+
+    TCHAR szName[]=TEXT("ReimaginingBreath");
+    TCHAR szMsg[]=TEXT("YOssage from first process.");
+
+
+    hMapFile = CreateFileMapping(
+        INVALID_HANDLE_VALUE,    // use paging file
+        NULL,                    // default security
+        PAGE_READWRITE,          // read/write access
+        0,                       // maximum object size (high-order DWORD)
+        BUF_SIZE,                // maximum object size (low-order DWORD)
+        szName);                 // name of mapping object
+
+    if (hMapFile == NULL)
+    {
+        _tprintf(TEXT("Could not create file mapping object (%d).\n"),
+                 GetLastError());
+    }
+    pBuf = (LPTSTR) MapViewOfFile(hMapFile,   // handle to map object
+                                  FILE_MAP_ALL_ACCESS, // read/write permission
+                                  0,
+                                  0,
+                                  BUF_SIZE);
+
+    if (pBuf == NULL)
+    {
+        _tprintf(TEXT("Could not map view of file (%d).\n"),
+                 GetLastError());
+
+        CloseHandle(hMapFile);
+    }
+
+    // end shared memory init
+
     /////////////////////////////////////
     /// Stop thread if doStop=TRUE /////
     ///////////////////////////////////
@@ -189,6 +231,10 @@ void PlayerThread::run()
         // Increase number of frames given to GUI
         currentWriteIndex++;
 
+        temp = magnificator.breathMeasureOutput;
+
+        CopyMemory((PVOID)pBuf, point2, sizeof(int));
+
 
         cv::putText(currentFrame, //target image
                     "FRAMENUM " + std::to_string(frameNum) , //text
@@ -228,6 +274,10 @@ void PlayerThread::run()
         int wait = max(delay-diff,0.0);
         this->msleep(wait);
     }
+    UnmapViewOfFile(pBuf);
+
+    CloseHandle(hMapFile);
+
     qDebug() << "Stopping player thread...";
 }
 
