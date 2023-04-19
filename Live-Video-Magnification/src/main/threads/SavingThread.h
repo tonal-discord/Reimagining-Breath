@@ -34,7 +34,7 @@
 #include "main/magnification/Magnificator.h"
 #include "main/other/Structures.h"
 
-using namespace cv;
+// using namespace cv;
 
 class SavingThread : public QThread
 {
@@ -59,24 +59,24 @@ private:
     void releaseFile();
     void resetSaver();
     // Capture
-    VideoCapture cap;
+    cv::VideoCapture cap;
     int videoLength;
-    std::vector<Mat> processingBuffer;
-    std::vector<Mat> originalBuffer;
+    std::vector<cv::Mat> processingBuffer;
+    std::vector<cv::Mat> originalBuffer;
     int processingBufferLength;
-    Rect ROI;
-    Mat grabbedFrame;
-    Mat currentFrame;
+    cv::Rect ROI;
+    cv::Mat grabbedFrame;
+    cv::Mat currentFrame;
     bool processingBufferFilled();
     // Write
-    VideoWriter out;
-    Mat processedFrame;
-    Mat mergedFrame;
+    cv::VideoWriter out;
+    cv::Mat processedFrame;
+    cv::Mat mergedFrame;
     int getCurrentCaptureIndex();
     bool captureOriginal;
     int currentWriteIndex;
     int getCurrentReadIndex();
-    Mat combineFrames(Mat &frame1, Mat &frame2);
+    cv::Mat combineFrames(cv::Mat &frame1, cv::Mat &frame2);
     // Magnify
     Magnificator magnificator;
     ImageProcessingFlags imgProcFlags;

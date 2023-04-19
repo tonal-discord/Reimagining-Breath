@@ -42,7 +42,7 @@
 #include "main/helper/MatToQImage.h"
 #include "main/magnification/Magnificator.h"
 
-using namespace cv;
+// using namespace cv;
 
 class PlayerThread : public QThread
 {
@@ -84,12 +84,12 @@ private:
         const std::string filepath;
         int getCurrentReadIndex();
         // Capture
-        VideoCapture cap;
-        Mat grabbedFrame;
+        cv::VideoCapture cap;
+        cv::Mat grabbedFrame;
         int playedTime;
         int width;
         int height;
-        std::vector<Mat> originalBuffer;
+        std::vector<cv::Mat> originalBuffer;
         void setBufferSize();
         // Process
         // This is the current Framenr that is grabbed from magnificator is always
@@ -97,8 +97,8 @@ private:
         int currentWriteIndex;
         double fps;
         void updateFPS(int timeElapsed);
-        Mat currentFrame;
-        Rect currentROI;
+        cv::Mat currentFrame;
+        cv::Rect currentROI;
         QImage frame;
         QImage originalFrame;
         // processing measurement
@@ -108,8 +108,8 @@ private:
         int sampleNumber;
         QQueue<int> fpsQueue;
         QMutex processingMutex;
-        Size frameSize;
-        Point framePoint;
+        cv::Size frameSize;
+        cv::Point framePoint;
         struct ImageProcessingFlags imgProcFlags;
         struct ImageProcessingSettings imgProcSettings;
         // Player variables
@@ -122,7 +122,7 @@ private:
         bool processingBufferFilled();
         void fillProcessingBuffer();
         Magnificator magnificator;
-        std::vector<Mat> processingBuffer;
+        std::vector<cv::Mat> processingBuffer;
         int processingBufferLength;
         int frameNum = 0;
 

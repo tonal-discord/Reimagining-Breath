@@ -23,15 +23,16 @@
 /************************************************************************************/
 
 // TODO: Frequency of 30-40% seemed decent.
-//using namespace cv;
+
 #include "main/magnification/Magnificator.h"
 #include "opencv2/opencv.hpp"
 #include <opencv2/core/mat.hpp> // didn't fix it
 
+//using namespace cv;
 ////////////////////////
 ///Constructor /////////
 ////////////////////////
-Magnificator::Magnificator(std::vector<Mat> *pBuffer,
+Magnificator::Magnificator(std::vector<cv::Mat> *pBuffer,
                            ImageProcessingFlags *imageProcFlags,
                            ImageProcessingSettings *imageProcSettings,
                            int *numFrames) :
@@ -46,8 +47,7 @@ Magnificator::Magnificator(std::vector<Mat> *pBuffer,
         exaggeration_factor = 2.f;
         lambda = 0;
         delta = 0;
-        if (numFrames != 0)
-            cout << "FRAM : " << *numFrames << endl; // TODO THIS WORKS, BUT NOT IN ThE CSV FILE.
+        breathMeasureOutput = 0;
     }
 Magnificator::~Magnificator()
 {
@@ -56,15 +56,15 @@ Magnificator::~Magnificator()
 
 int Magnificator::calculateMaxLevels()
 {
-    Size s = processingBuffer->front().size();
+    cv::Size s = processingBuffer->front().size();
     return calculateMaxLevels(s);
 }
 int Magnificator::calculateMaxLevels(QRect r)
 {
-    Size s = Size(r.width(),r.height());
+    cv::Size s = cv::Size(r.width(),r.height());
     return calculateMaxLevels(s);
 }
-int Magnificator::calculateMaxLevels(Size s)
+int Magnificator::calculateMaxLevels(cv::Size s)
 {
     if (s.width > 5 && s.height > 5) {
         const cv::Size halved((1 + s.width) / 2, (1 + s.height) / 2);
@@ -85,8 +85,8 @@ void Magnificator:: colorMagnify() {
     // Number of levels in pyramid
     //levels = DEFAULT_COL_MAG_LEVELS;
     levels = imgProcSettings->levels;
-    Mat input, output, color, filteredFrame, downSampledFrame, filteredMat;
-    std::vector<Mat> inputFrames, inputPyramid;
+    cv::Mat input, output, color, filteredFrame, downSampledFrame, filteredMat;
+    std::vector<cv::Mat> inputFrames, inputPyramid;
 
     int offset = 0;
     int pChannels;
@@ -288,7 +288,7 @@ int circBuffMax3() {
 
 }
 
-bool compareContours(vector<Point> cont1, vector<Point> cont2) { return cv::arcLength(cont1, 0) > cv::arcLength(cont2, 0); }
+bool compareContours(vector<cv::Point> cont1, vector<cv::Point> cont2) { return cv::arcLength(cont1, 0) > cv::arcLength(cont2, 0); }
 
 int prevAvgContoursSum = 0; // todo fix this
 int first = 1;
@@ -302,8 +302,8 @@ void Magnificator::laplaceMagnify() {
     levels = imgProcSettings->levels;
 //    cout << "LEVELS: " + std::to_string(levels);
 
-    Mat input, output, motion, hsvimg, labimg, newestMotion, preparedFrame, firstContours;
-    vector<Mat> inputPyramid;
+    cv::Mat input, output, motion, hsvimg, labimg, newestMotion, preparedFrame, firstContours;
+    vector<cv::Mat> inputPyramid;
     int pChannels;
 
     // Process every frame in buffer that wasn't magnified yet
@@ -386,7 +386,7 @@ void Magnificator::laplaceMagnify() {
         // const auto ycr = cv::mean(output); // Average Value of image, stored in array ycr[3]
 
         // potentially another way to do this
-        // Mat chann[3];
+        // cv::Mat chann[3];
         // chann = cv::split(output, chann);
 
 //        int x = motion.at<Vec3b>(10, 29)[0]; // Get green value of pixel 10,29
@@ -425,12 +425,12 @@ void Magnificator::laplaceMagnify() {
 
             // convert prevFrame
             cvtColor(prevFrame, prevFrame, cv::COLOR_BGR2GRAY);
-            cv::GaussianBlur(prevFrame, prevFrame, Size(5,5), 0, 0);
+            cv::GaussianBlur(prevFrame, prevFrame, cv::Size(5,5), 0, 0);
             prevFrame.convertTo(prevFrame, CV_8UC1, 255.0, 1.0/255.0);
 
             // convert newestMotion as a gray of output
             cvtColor(output, newestMotion, cv::COLOR_BGR2GRAY);
-            cv::GaussianBlur(newestMotion, newestMotion, Size(5,5), 0, 0);
+            cv::GaussianBlur(newestMotion, newestMotion, cv::Size(5,5), 0, 0);
 
             preparedFrame = prevFrame;
 
@@ -442,11 +442,11 @@ void Magnificator::laplaceMagnify() {
             cv::absdiff(prevFrame, newestMotion, preparedFrame);
 
 
-            Mat one = Mat::ones(2, 2, CV_8UC1);
+            cv::Mat one = cv::Mat::ones(2, 2, CV_8UC1);
 
-            cv::dilate(preparedFrame, preparedFrame, one, Point(-1,-1), 1);
+            cv::dilate(preparedFrame, preparedFrame, one, cv::Point(-1,-1), 1);
 
-            Mat threshFrame;
+            cv::Mat threshFrame;
             cv::threshold(preparedFrame, threshFrame, 20, 255, cv::THRESH_BINARY); // 20, 255 are the thresholds.
 
             bitwise_not(threshFrame, threshFrame); // invert image so foreground is white, background is black. (contours detct white on black)
@@ -468,16 +468,16 @@ void Magnificator::laplaceMagnify() {
 
 
             // contours approach below
-            vector<vector<Point>> contours;
+            vector<vector<cv::Point>> contours;
             cv::findContours(threshFrame, contours, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_TC89_L1); // maybe experiment w/ diff modes
             // like CV_RETR_EXTERNAL might help a TON.
 
 //            ImageProcessingSettings
 
 //            int h = input.size().height;;
-//            Mat finalFrame = Mat::zeros(imgProcSettings->frameHeight, imgProcSettings->frameWidth, CV_8UC3); // don't remember why this is here and why it's 8UC3 not 8UC1.
-            Mat finalFrame = Mat::zeros(input.size().height, input.size().width, CV_8UC3); // don't remember why this is here and why it's 8UC3 not 8UC1.
-//            Mat finalFrame;
+//            cv::Mat finalFrame = cv::Mat::zeros(imgProcSettings->frameHeight, imgProcSettings->frameWidth, CV_8UC3); // don't remember why this is here and why it's 8UC3 not 8UC1.
+            cv::Mat finalFrame = cv::Mat::zeros(input.size().height, input.size().width, CV_8UC3); // don't remember why this is here and why it's 8UC3 not 8UC1.
+//            cv::Mat finalFrame;
 
 
 
@@ -486,11 +486,11 @@ void Magnificator::laplaceMagnify() {
             std::sort(contours.begin(), contours.end(), compareContours);
 
             int numContours = contours.size();
-            // draw contours on Mat frame.
+            // draw contours on cv::Mat frame.
 
             int desiredLongest = 20;
             for (int i = 0; i < std::min(numContours, desiredLongest); i++) {
-                cv::drawContours(finalFrame, contours, i, Scalar(0,255,0), 2, cv::LINE_AA);
+                cv::drawContours(finalFrame, contours, i, cv::Scalar(0,255,0), 2, cv::LINE_AA);
             }
 
 
@@ -519,7 +519,7 @@ void Magnificator::laplaceMagnify() {
 
 
 //                cout << contours[i] << endl; // Contours is a vector of contours(which are stored as point vectors)
-                vector<Point> pont = contours[i]; // pont is a contour defined as a vector consistuing of multiple points.
+                vector<cv::Point> pont = contours[i]; // pont is a contour defined as a vector consistuing of multiple points.
                 int vectorSum = 0;
 
                 for (size_t j = 0; j < pont.size(); j++) {
@@ -621,7 +621,7 @@ void Magnificator::laplaceMagnify() {
 
 
             // HULL - is interesting. Like approximates/ connects contours.
-//            vector<vector<Point> >hull( contours.size() );
+//            vector<vector<cv::Point> >hull( contours.size() );
 //            for( size_t i = 0; i < contours.size(); i++ )
 //            {
 //                cv::convexHull( contours[i], hull[i] );
@@ -632,10 +632,10 @@ void Magnificator::laplaceMagnify() {
             // don't work below here.
 //            cout << endl << "Contour size: " << contours.size() << endl;
             // attempt to get contour's coordinates
-//            vector<Point> fifthcontour = contours[0]; // crashes???? why??? out of range?
+//            vector<cv::Point> fifthcontour = contours[0]; // crashes???? why??? out of range?
 
 //            for (int i = 0; i < fifthcontour.size(); i++) {
-//                Point coordinate_i_ofcontour = fifthcontour[i];
+//                cv::Point coordinate_i_ofcontour = fifthcontour[i];
 //                cout << endl << "contour with coordinates: x = " << coordinate_i_ofcontour.x << " y = " << coordinate_i_ofcontour.y;
 //            }
 
@@ -654,16 +654,16 @@ void Magnificator::laplaceMagnify() {
 
 //            contours.resize(contours0.size());
 //            for( size_t k = 0; k < contours.size(); k++ ) {
-//                vector<Point> curcontour = contours.at(k);
+//                vector<cv::Point> curcontour = contours.at(k);
 //                for (int i = 0; i < curcontour.size(); i++) {
-//                    Point contPoint = curcontour[i];
+//                    cv::Point contPoint = curcontour[i];
 //                            cout << endl << "Current y value" << contPoint << endl;
 //                }
 //            }
 
-//            vector<vector<Point>> contoursFin;
+//            vector<vector<cv::Point>> contoursFin;
 //            for( size_t k = 0; k < contours.size(); k++ ) {
-//                cv::approxPolyDP(Mat(contours[k]), contoursFin[k], 3, true);
+//                cv::approxPolyDP(cv::Mat(contours[k]), contoursFin[k], 3, true);
 //            }
 
 
@@ -703,7 +703,7 @@ void Magnificator::rieszMagnify()
     levels = imgProcSettings->levels;
 
 
-    Mat buffer_in, input, magnified, output;
+    cv::Mat buffer_in, input, magnified, output;
     std::vector<cv::Mat> channels;
     int pChannels;
     static const double PI_PERCENT = M_PI / 100.0;
@@ -724,7 +724,7 @@ void Magnificator::rieszMagnify()
         {
             // Convert color images to YCrCb
             buffer_in.convertTo(buffer_in, CV_32FC3, 1.0/255.0);
-            cvtColor(buffer_in, buffer_in, COLOR_BGR2YCrCb);
+            cvtColor(buffer_in, buffer_in, cv::COLOR_BGR2YCrCb);
             cv::split(buffer_in, channels);
             input = channels[0];
         }
@@ -800,7 +800,7 @@ void Magnificator::rieszMagnify()
             // Convert YCrCb image back to BGR
             channels[0] = magnified;
             cv::merge(channels, output);
-            cvtColor(output, output, COLOR_YCrCb2BGR);
+            cvtColor(output, output, cv::COLOR_YCrCb2BGR);
             output.convertTo(output, CV_8UC3, 255.0, 1.0/255.0);
         }
         else
@@ -817,10 +817,10 @@ void Magnificator::rieszMagnify()
 ////////////////////////
 ///Magnified Buffer ////
 ////////////////////////
-Mat Magnificator::getFrameLast()
+cv::Mat Magnificator::getFrameLast()
 {
     // Take newest image
-    Mat img = this->magnifiedBuffer.back().clone();
+    cv::Mat img = this->magnifiedBuffer.back().clone();
     // Delete the oldest picture
     this->magnifiedBuffer.erase(magnifiedBuffer.begin());
     currentFrame = magnifiedBuffer.size();
@@ -828,10 +828,10 @@ Mat Magnificator::getFrameLast()
     return img;
 }
 
-Mat Magnificator::getFrameFirst()
+cv::Mat Magnificator::getFrameFirst()
 {
     // Take oldest image
-    Mat img = this->magnifiedBuffer.front().clone();
+    cv::Mat img = this->magnifiedBuffer.front().clone();
     // Delete the oldest picture
     this->magnifiedBuffer.erase(magnifiedBuffer.begin());
     currentFrame = magnifiedBuffer.size();
@@ -839,10 +839,10 @@ Mat Magnificator::getFrameFirst()
     return img;
 }
 
-Mat Magnificator::getFrameAt(int n)
+cv::Mat Magnificator::getFrameAt(int n)
 {
     int mLength = magnifiedBuffer.size();
-    Mat img;
+    cv::Mat img;
 
     if(n < mLength-1)
         img = this->magnifiedBuffer.at(n).clone();
@@ -872,7 +872,7 @@ void Magnificator::clearBuffer()
     this->lowpassHi.clear();
     this->lowpassLo.clear();
     this->motionPyramid.clear();
-    this->downSampledMat = Mat();
+    this->downSampledMat = cv::Mat();
     this->currentFrame = 0;
     oldPyr.reset();
     curPyr.reset();
@@ -901,7 +901,7 @@ int Magnificator::getOptimalBufferSize(int fps)
 ////////////////////////
 ///Postprocessing //////
 ////////////////////////
-void Magnificator::amplifyLaplacian(const Mat &src, Mat &dst, int currentLevel)
+void Magnificator::amplifyLaplacian(const cv::Mat &src, cv::Mat &dst, int currentLevel)
 {
     float currAlpha = (lambda/(delta*8.0) - 1.0) * exaggeration_factor;
     // Set lowpassed&downsampled image and difference image with highest resolution to 0,
@@ -910,12 +910,12 @@ void Magnificator::amplifyLaplacian(const Mat &src, Mat &dst, int currentLevel)
                                                         : src * std::min((float)imgProcSettings->amplification, currAlpha);
 }
 
-void Magnificator::attenuate(const Mat &src, Mat &dst)
+void Magnificator::attenuate(const cv::Mat &src, cv::Mat &dst)
 {
     // Attenuate only if image is not grayscale
     if(src.channels() > 2)
     {
-        Mat planes[3];
+        cv::Mat planes[3];
         split(src, planes);
         planes[1] = planes[1] * imgProcSettings->chromAttenuation;
         planes[2] = planes[2] * imgProcSettings->chromAttenuation;
@@ -923,7 +923,7 @@ void Magnificator::attenuate(const Mat &src, Mat &dst)
     }
 }
 
-void Magnificator::amplifyGaussian(const Mat &src, Mat &dst)
+void Magnificator::amplifyGaussian(const cv::Mat &src, cv::Mat &dst)
 {
     dst = src * imgProcSettings->amplification;
 }

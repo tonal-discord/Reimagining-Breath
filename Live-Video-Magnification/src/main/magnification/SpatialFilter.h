@@ -34,7 +34,7 @@
 #include <vector>
 
 using namespace std;
-using namespace cv;
+//using namespace cv;
 
 // Wavelet Filtertypes
 #define NONE 0  // no filter
@@ -52,7 +52,7 @@ using namespace cv;
  * \param levels Number of times the image is downsampled.
  * \param pyr Vector that holds every level of the pyramid. Last element is smallest image.
  */
-void buildGaussPyrFromImg(const Mat &img, const int levels, vector<Mat> &pyr);
+void buildGaussPyrFromImg(const cv::Mat &img, const int levels, vector<cv::Mat> &pyr);
 /*!
  * \brief buildLaplacePyrFromImg Builds a Laplace Pyramid from given image and saves
  *  every level of the pyramid in a vector (remember: a LaplacePyr saves the difference of
@@ -61,7 +61,7 @@ void buildGaussPyrFromImg(const Mat &img, const int levels, vector<Mat> &pyr);
  * \param levels Number of times the image is downsampled.
  * \param pyr Vector that holds every level of the pyramid. Last element is smallest image (not the difference).
  */
-void buildLaplacePyrFromImg(const Mat &img, const int levels, vector<Mat> &pyr);
+void buildLaplacePyrFromImg(const cv::Mat &img, const int levels, vector<cv::Mat> &pyr);
 /*!
  * \brief buildWaveletPyrFromImg Computes the discrete wavelet transform (DWT) with a Haar Wavelet as base.
  * \param img Source image.
@@ -71,7 +71,7 @@ void buildLaplacePyrFromImg(const Mat &img, const int levels, vector<Mat> &pyr);
  * \param SHRINK_TYPE Noise reduction type.
  * \param SHRINK_T Noise reduction value.
  */
-void buildWaveletPyrFromImg(const Mat &img, const int levels, vector< vector<Mat> > &pyr, int SHRINK_TYPE=0, float SHRINK_T=10.f);
+void buildWaveletPyrFromImg(const cv::Mat &img, const int levels, vector< vector<cv::Mat> > &pyr, int SHRINK_TYPE=0, float SHRINK_T=10.f);
 
 //////////////////////// 
 /// Upsampling /////////
@@ -83,14 +83,14 @@ void buildWaveletPyrFromImg(const Mat &img, const int levels, vector< vector<Mat
  * \param dst Destination Mat for upsampled image.
  * \param size Destination size of upsampled image.
  */
-void buildImgFromGaussPyr(const Mat &pyr, const int levels, Mat &dst, Size size);
+void buildImgFromGaussPyr(const cv::Mat &pyr, const int levels, cv::Mat &dst, cv::Size size);
 /*!
  * \brief buildImgFromLaplacePyr Reconstructs an image from a given Laplace Pyramid.
  * \param pyr Vector that holds the image levels of the Pyramid.
  * \param levels Number of levels that are used to reconstruct the image. Should be < pyr.size.
  * \param dst Destination Mat for upsampled image.
  */
-void buildImgFromLaplacePyr(const vector<Mat> &pyr, const int levels, Mat &dst);
+void buildImgFromLaplacePyr(const vector<cv::Mat> &pyr, const int levels, cv::Mat &dst);
 /*!
  * \brief buildImgFromWaveletPyr Reconstructs an image from a DWT.
  * \param pyr The pyramid, holding the levels on the 1st dimension and coefficients on the 2nd dimension.
@@ -99,7 +99,7 @@ void buildImgFromLaplacePyr(const vector<Mat> &pyr, const int levels, Mat &dst);
  * \param SHRINK_TYPE Noise reduction type.
  * \param SHRINK_T Noise reduction value.
  */
-void buildImgFromWaveletPyr(const vector<vector<Mat> > &pyr, Mat &dst, Size origSize, int SHRINK_TYPE=0, float SHRINK_T=10.f);
+void buildImgFromWaveletPyr(const vector<vector<cv::Mat> > &pyr, cv::Mat &dst, cv::Size origSize, int SHRINK_TYPE=0, float SHRINK_T=10.f);
 
 ////////////////////////
 /// Helper /////////////

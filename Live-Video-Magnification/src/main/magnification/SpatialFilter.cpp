@@ -23,17 +23,17 @@
 /************************************************************************************/
 
 #include "main/magnification/SpatialFilter.h"
-
+//using namespace cv;
 ////////////////////////
 /// Downsampling ///////
 ////////////////////////
-void buildGaussPyrFromImg(const Mat &img, const int levels, vector<Mat> &pyr)
+void buildGaussPyrFromImg(const cv::Mat &img, const int levels, vector<cv::Mat> &pyr)
 {
     pyr.clear();
-    Mat currentLevel = img;
+    cv::Mat currentLevel = img;
 
     for (int level = 0; level < levels; ++level) {
-        Mat down;
+        cv::Mat down;
         pyrDown(currentLevel, down);
         pyr.push_back(down);
         currentLevel = down;
@@ -41,30 +41,30 @@ void buildGaussPyrFromImg(const Mat &img, const int levels, vector<Mat> &pyr)
 }
 
 
-void buildLaplacePyrFromImg(const Mat &img, const int levels, vector<Mat> &pyr)
+void buildLaplacePyrFromImg(const cv::Mat &img, const int levels, vector<cv::Mat> &pyr)
 {
     pyr.clear();
-    Mat currentLevel = img;
+    cv::Mat currentLevel = img;
 
     for (int level = 0; level < levels; ++level) {
-        Mat down,up;
+        cv::Mat down,up;
         pyrDown(currentLevel, down);
         pyrUp(down, up, currentLevel.size());
-        Mat laplace = currentLevel - up;
+        cv::Mat laplace = currentLevel - up;
         pyr.push_back(laplace);
         currentLevel = down;
     }
     pyr.push_back(currentLevel);
 }
 
-void buildWaveletPyrFromImg(const Mat &img, const int levels, vector<vector<Mat> > &pyr, int SHRINK_TYPE, float SHRINK_T)
+void buildWaveletPyrFromImg(const cv::Mat &img, const int levels, vector<vector<cv::Mat> > &pyr, int SHRINK_TYPE, float SHRINK_T)
 {
     float c,dh,dv,dd;
-    vector<Mat> levelVector;
+    vector<cv::Mat> levelVector;
     int width = img.cols;
     int height = img.rows;
-    Mat curFrame = img.clone();
-    pyr = vector< vector<Mat> >(levels);
+    cv::Mat curFrame = img.clone();
+    pyr = vector< vector<cv::Mat> >(levels);
 
 
     for (int lvl=0;lvl<levels;lvl++)
@@ -80,7 +80,7 @@ void buildWaveletPyrFromImg(const Mat &img, const int levels, vector<vector<Mat>
         }
         // Create new Mats to write DWT into
         for(int dir = 0; dir < 4; dir++) {
-            levelVector.push_back(Mat::zeros(height,width,CV_32F));
+            levelVector.push_back(cv::Mat::zeros(height,width,CV_32F));
         }
 
         for (int y=0;y<height;y++)
@@ -131,12 +131,12 @@ void buildWaveletPyrFromImg(const Mat &img, const int levels, vector<vector<Mat>
 ////////////////////////
 /// Upsampling /////////
 ////////////////////////
-void buildImgFromGaussPyr(const Mat &pyr, const int levels, Mat &dst, Size size)
+void buildImgFromGaussPyr(const cv::Mat &pyr, const int levels, cv::Mat &dst, cv::Size size)
 {
-    Mat currentLevel = pyr.clone();
+    cv::Mat currentLevel = pyr.clone();
 
     for (int level = 0; level < levels; ++level) {
-        Mat up;
+        cv::Mat up;
         pyrUp(currentLevel, up);
         currentLevel = up;
     }
@@ -145,39 +145,39 @@ void buildImgFromGaussPyr(const Mat &pyr, const int levels, Mat &dst, Size size)
     currentLevel.copyTo(dst);
 }
 
-void buildImgFromLaplacePyr(const vector<Mat> &pyr, const int levels, Mat &dst)
+void buildImgFromLaplacePyr(const vector<cv::Mat> &pyr, const int levels, cv::Mat &dst)
 {
-    Mat currentLevel = pyr[levels];
+    cv::Mat currentLevel = pyr[levels];
 
     for (int level = levels-1; level >= 0; --level) {
-        Mat up;
+        cv::Mat up;
         pyrUp(currentLevel, up, pyr[level].size());
         currentLevel = up+pyr[level];
     }
     dst = currentLevel.clone();
 }
 
-void buildImgFromWaveletPyr(const vector<vector<Mat> > &pyr, Mat &dst, Size origSize, int SHRINK_TYPE, float SHRINK_T)
+void buildImgFromWaveletPyr(const vector<vector<cv::Mat> > &pyr, cv::Mat &dst, cv::Size origSize, int SHRINK_TYPE, float SHRINK_T)
 {
     int levels = pyr.size();
     float c,dh,dv,dd;
-    Mat tmp;
+    cv::Mat tmp;
     int width,height;
 
     // First picture that will be upsampled is beeing hold in pyramid
-    Mat currentRecon = pyr[levels-1][3];
+    cv::Mat currentRecon = pyr[levels-1][3];
     currentRecon.convertTo(currentRecon,CV_32FC1);
 
     // For every level, beginning from the last one
     for (int lvl=levels-1;lvl>=0;lvl--)
     {
         // Adjust size to next level
-        Size size = (lvl == 0) ? origSize : pyr[lvl-1][0].size();
+        cv::Size size = (lvl == 0) ? origSize : pyr[lvl-1][0].size();
         height = size.height;
         width = size.width;
 
         // Calculate image for next level
-        tmp = Mat::zeros(height, width, CV_32FC1);
+        tmp = cv::Mat::zeros(height, width, CV_32FC1);
         for (int y=0;y<height/2;y++)
         {
             for (int x=0; x<width/2;x++)

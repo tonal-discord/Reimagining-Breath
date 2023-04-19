@@ -30,13 +30,13 @@ SharedImageBuffer::SharedImageBuffer()
     nArrived=0;
 }
 
-void SharedImageBuffer::add(int deviceNumber, Buffer<Mat>* imageBuffer)
+void SharedImageBuffer::add(int deviceNumber, Buffer<cv::Mat>* imageBuffer)
 {
     // Add image buffer to map
     imageBufferMap[deviceNumber]=imageBuffer;
 }
 
-Buffer<Mat>* SharedImageBuffer::getByDeviceNumber(int deviceNumber)
+Buffer<cv::Mat>* SharedImageBuffer::getByDeviceNumber(int deviceNumber)
 {
     return imageBufferMap[deviceNumber];
 }

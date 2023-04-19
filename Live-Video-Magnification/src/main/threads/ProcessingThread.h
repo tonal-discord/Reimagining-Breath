@@ -24,6 +24,10 @@
 
 #ifndef PROCESSINGTHREAD_H
 #define PROCESSINGTHREAD_H
+// Windows/C++
+#include <windows.h>
+#include <stdio.h>
+#include <conio.h>
 
 // Qt
 #include <QtCore/QThread>
@@ -41,7 +45,7 @@
 #include "main/helper/SharedImageBuffer.h"
 #include "main/magnification/Magnificator.h"
 
-using namespace cv;
+//using namespace cv;
 
 class ProcessingThread : public QThread
 {
@@ -67,19 +71,19 @@ class ProcessingThread : public QThread
         void fillProcessingBuffer();
         Magnificator magnificator;
         SharedImageBuffer *sharedImageBuffer;
-        Mat currentFrame;
-        Mat combinedFrame;
-        Mat originalFrame;
-        Rect currentROI;
+        cv::Mat currentFrame;
+        cv::Mat combinedFrame;
+        cv::Mat originalFrame;
+        cv::Rect currentROI;
         QImage frame;
         QElapsedTimer t;
         QQueue<int> fps;
         QMutex doStopMutex;
         QMutex processingMutex;
-        Size frameSize;
-        std::vector<Mat> processingBuffer;
+        cv::Size frameSize;
+        std::vector<cv::Mat> processingBuffer;
         int processingBufferLength;
-        Point framePoint;
+        cv::Point framePoint;
         struct ImageProcessingFlags imgProcFlags;
         struct ImageProcessingSettings imgProcSettings;
         struct ThreadStatisticsData statsData;
@@ -90,11 +94,11 @@ class ProcessingThread : public QThread
         int deviceNumber;
         bool emitOriginal;
         bool doRecord;
-        VideoWriter output;
+        cv::VideoWriter output;
         int framesWritten;
         int recordingFramerate;
         bool captureOriginal;
-        Mat combineFrames(Mat &frame1, Mat &frame2);
+        cv::Mat combineFrames(cv::Mat &frame1, cv::Mat &frame2);
         QMutex recordMutex;
         int frameNum;
 

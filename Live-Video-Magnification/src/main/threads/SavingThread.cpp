@@ -31,8 +31,8 @@ SavingThread::SavingThread() : QThread()
     currentWriteIndex = 0;
     processingBufferLength = 1;
 
-    cap = VideoCapture();
-    out = VideoWriter();
+    cap = cv::VideoCapture();
+    out = cv::VideoWriter();
 }
 // Destructor
 SavingThread::~SavingThread()
@@ -73,7 +73,7 @@ void SavingThread::run()
                 // Try to read the Frame
                 if(cap.read(grabbedFrame)) {
                     // Clone the most recent frame
-                    currentFrame = Mat(grabbedFrame.clone(), ROI);
+                    currentFrame = cv::Mat(grabbedFrame.clone(), ROI);
 
                     // Do the PREPROCESSING
                     if(imgProcFlags.grayscaleOn && (currentFrame.channels() == 3 || currentFrame.channels() == 4)) {
@@ -119,7 +119,7 @@ void SavingThread::run()
 
         // Combine Frames
         if(captureOriginal) {
-            Mat originalFrame = originalBuffer.front();
+            cv::Mat originalFrame = originalBuffer.front();
             mergedFrame = combineFrames(processedFrame, originalFrame);
             originalBuffer.erase(originalBuffer.begin());
         }
@@ -200,9 +200,9 @@ bool SavingThread::saveFile(std::string destination, double framerate, QRect dim
     else
         processingBufferLength = 1;
 
-    this->ROI = Rect(dimensions.x(), dimensions.y(), dimensions.width(), dimensions.height());
+    this->ROI = cv::Rect(dimensions.x(), dimensions.y(), dimensions.width(), dimensions.height());
     this->captureOriginal = captureOriginal;
-    Size s = captureOriginal ? Size(ROI.width*2, ROI.height) : Size(ROI.width, ROI.height);
+    cv::Size s = captureOriginal ? cv::Size(ROI.width*2, ROI.height) : cv::Size(ROI.width, ROI.height);
     // Codec WATCH OUT: Not every codec is available on every PC,
     // MP4V was chosen because it's famous among various systems
     //int codec = CV_FOURCC('M','P','4','V');
@@ -243,16 +243,16 @@ int SavingThread::getCurrentReadIndex()
 }
 
 // Combine Frames into one Frame, depending on their size
-Mat SavingThread::combineFrames(Mat &frame1, Mat &frame2)
+cv::Mat SavingThread::combineFrames(cv::Mat &frame1, cv::Mat &frame2)
 {
-    Mat roi;
+    cv::Mat roi;
     int w = (int)ROI.width;
     int h = (int)ROI.height;
 
-    Mat mergedFrame = Mat(Size(w*2, h), frame1.type());
-    roi = Mat(mergedFrame, Rect(0,0,w,h));
+    cv::Mat mergedFrame = cv::Mat(cv::Size(w*2, h), frame1.type());
+    roi = cv::Mat(mergedFrame, cv::Rect(0,0,w,h));
     frame1.copyTo(roi);
-    roi = Mat(mergedFrame, Rect(w,0,w,h));
+    roi = cv::Mat(mergedFrame, cv::Rect(w,0,w,h));
     frame2.copyTo(roi);
 
     return mergedFrame;

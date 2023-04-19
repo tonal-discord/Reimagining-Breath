@@ -43,7 +43,7 @@ ProcessingThread::ProcessingThread(SharedImageBuffer *sharedImageBuffer, int dev
     frameNum = 0;
     this->processingBufferLength = 2;
     this->magnificator = Magnificator(&processingBuffer, &imgProcFlags, &imgProcSettings, &frameNum);
-    this->output = VideoWriter();
+    this->output = cv::VideoWriter();
 }
 
 // Destructor
@@ -103,7 +103,7 @@ void ProcessingThread::run()
 
         processingMutex.lock();
         // Get frame from queue, store in currentFrame, set ROI
-        currentFrame=Mat(sharedImageBuffer->getByDeviceNumber(deviceNumber)->get().clone(), currentROI);
+        currentFrame=cv::Mat(sharedImageBuffer->getByDeviceNumber(deviceNumber)->get().clone(), currentROI);
 
         ////////////////////////// ///////// // 
         // PERFORM IMAGE PROCESSING BELOW // 
@@ -163,7 +163,7 @@ void ProcessingThread::run()
                    2);
 
 
-        // Convert Mat to QImage
+        // Convert cv::Mat to QImage
         frame=MatToQImage(currentFrame);
 
         processingMutex.unlock();
@@ -331,10 +331,10 @@ bool ProcessingThread::startRecord(std::string filepath, bool captureOriginal)
     // Check if grayscale is on (or camera only captures grayscale)
     bool isColor = !((imgProcFlags.grayscaleOn)||(currentFrame.channels() == 1));
     // Capture size is doubled if original should be captured too
-    Size s = captureOriginal ? Size(w*2, h) : Size(w, h);
+    cv::Size s = captureOriginal ? cv::Size(w*2, h) : cv::Size(w, h);
  
     bool opened = false;
-    output = VideoWriter();
+    output = cv::VideoWriter();
     opened = output.open(filepath, savingCodec, statsData.averageFPS, s, isColor);
     recordingFramerate = statsData.averageFPS;
 
@@ -358,16 +358,16 @@ bool ProcessingThread::isRecording()
 }
 
 // Combine Frames into one Frame, depending on their size
-Mat ProcessingThread::combineFrames(Mat &frame1, Mat &frame2)
+cv::Mat ProcessingThread::combineFrames(cv::Mat &frame1, cv::Mat &frame2)
 {
-    Mat roi;
+    cv::Mat roi;
     int w = (int)currentROI.width;
     int h = (int)currentROI.height;
 
-    Mat mergedFrame = Mat(Size(w*2, h), frame1.type());
-    roi = Mat(mergedFrame, Rect(0,0,w,h));
+    cv::Mat mergedFrame = cv::Mat(cv::Size(w*2, h), frame1.type());
+    roi = cv::Mat(mergedFrame, cv::Rect(0,0,w,h));
     frame1.copyTo(roi);
-    roi = Mat(mergedFrame, Rect(w,0,w,h));
+    roi = cv::Mat(mergedFrame, cv::Rect(w,0,w,h));
     frame2.copyTo(roi);
 
     return mergedFrame;

@@ -36,20 +36,20 @@
 // Local
 #include <main/other/Buffer.h>
 
-using namespace cv;
+//using namespace cv;
 
 class SharedImageBuffer
 {
     public:
         SharedImageBuffer();
-        void add(int deviceNumber, Buffer<Mat> *imageBuffer);
-        Buffer<Mat>* getByDeviceNumber(int deviceNumber);
+        void add(int deviceNumber, Buffer<cv::Mat> *imageBuffer);
+        Buffer<cv::Mat>* getByDeviceNumber(int deviceNumber);
         void removeByDeviceNumber(int deviceNumber);
         void wakeAll();
         bool containsImageBufferForDeviceNumber(int deviceNumber);
 
     private:
-        QHash<int, Buffer<Mat>*> imageBufferMap;
+        QHash<int, Buffer<cv::Mat>*> imageBufferMap;
         QWaitCondition wc;
         QMutex mutex;
         int nArrived;

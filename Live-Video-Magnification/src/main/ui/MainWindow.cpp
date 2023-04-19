@@ -80,7 +80,7 @@ void MainWindow::connectToCamera()
             if(!deviceNumberMap.contains(deviceNumber))
             {
                 // Create ImageBuffer with user-defined size
-                Buffer<Mat> *imageBuffer = new Buffer<Mat>(cameraConnectDialog->getImageBufferSize());
+                Buffer<cv::Mat> *imageBuffer = new Buffer<cv::Mat>(cameraConnectDialog->getImageBufferSize());
                 // Add created ImageBuffer to SharedImageBuffer object
                 sharedImageBuffer->add(deviceNumber, imageBuffer);
                 // Create CameraView
@@ -424,25 +424,25 @@ void MainWindow::setCodec(QAction *action)
         action->setChecked(true);
 
         if(name == "DivX")
-            codec = VideoWriter::fourcc('D','I','V','X');
+            codec = cv::VideoWriter::fourcc('D','I','V','X');
         else if(name == "FFV1 (FFMPEG Codec)")
-            codec = VideoWriter::fourcc('F','F','V','1');
+            codec = cv::VideoWriter::fourcc('F','F','V','1');
         else if(name == "HDYC (Raw YUV 4:2:2)")
-            codec = VideoWriter::fourcc('H','D','Y','C');
+            codec = cv::VideoWriter::fourcc('H','D','Y','C');
         else if(name == "HEVC (H.265)")
-            codec = VideoWriter::fourcc('H','E','V','C');
+            codec = cv::VideoWriter::fourcc('H','E','V','C');
         else if(name == "M4S2 (MPEG-4 v2)")
-            codec = VideoWriter::fourcc('M','4','S','2');
+            codec = cv::VideoWriter::fourcc('M','4','S','2');
         else if(name == "MJPG (Motion JPEG)")
-            codec = VideoWriter::fourcc('M','J','P','G');
+            codec = cv::VideoWriter::fourcc('M','J','P','G');
         else if(name == "MP2V (MPEG-2)")
-            codec = VideoWriter::fourcc('M','P','2','V');
+            codec = cv::VideoWriter::fourcc('M','P','2','V');
         else if(name == "MP4V (MPEG-4)")
-            codec = VideoWriter::fourcc('M','P','4','V');
+            codec = cv::VideoWriter::fourcc('M','P','4','V');
         else if(name == "MPEG (MPEG-1?)")
-            codec = VideoWriter::fourcc('M','P','E','G');
+            codec = cv::VideoWriter::fourcc('M','P','E','G');
         else if(name == "PIM1 (MPEG-1)")
-            codec = VideoWriter::fourcc('P','I','M','1');
+            codec = cv::VideoWriter::fourcc('P','I','M','1');
         else
             codec = -1;
 

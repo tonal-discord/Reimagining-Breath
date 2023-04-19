@@ -40,8 +40,8 @@ PlayerThread::PlayerThread(const std::string filepath, int width, int height, do
     statsData.averageVidProcessingFPS = 0;
     statsData.nFramesProcessed = 0;
 
-    originalBuffer = std::vector<Mat>();
-    processingBuffer = std::vector<Mat>();
+    originalBuffer = std::vector<cv::Mat>();
+    processingBuffer = std::vector<cv::Mat>();
 
     imgProcSettings.framerate = fps;
 
@@ -51,7 +51,7 @@ PlayerThread::PlayerThread(const std::string filepath, int width, int height, do
 
     frameNum = 0;
     this->magnificator = Magnificator(&processingBuffer, &imgProcFlags, &imgProcSettings, &frameNum);
-    this->cap = VideoCapture();
+    this->cap = cv::VideoCapture();
     currentWriteIndex = 0;
 }
 
@@ -123,7 +123,7 @@ void PlayerThread::run()
             if(cap.read(grabbedFrame)) {
                 // Preprocessing
                 // Set ROI of frame
-                currentFrame = Mat(grabbedFrame.clone(), currentROI);
+                currentFrame = cv::Mat(grabbedFrame.clone(), currentROI);
                 // Convert to grayscale
                 if(imgProcFlags.grayscaleOn && (currentFrame.channels() == 3 || currentFrame.channels() == 4)) {
                     cvtColor(currentFrame, currentFrame, cv::COLOR_BGR2GRAY, 1);
@@ -256,7 +256,7 @@ bool PlayerThread::loadFile()
 {
     // Just in case, release file
     releaseFile();
-    cap = VideoCapture(filepath);
+    cap = cv::VideoCapture(filepath);
 
     // Open file
     bool openResult = isFileLoaded();

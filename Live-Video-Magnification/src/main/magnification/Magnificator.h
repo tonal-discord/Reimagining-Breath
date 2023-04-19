@@ -47,7 +47,7 @@
 
 #define M_PI 3.14159265358979323846264338327950288
 
-using namespace cv;
+//using namespace cv;
 using namespace std;
 /*!
  * \brief The Magnificator class Handles the motion and color magnification. The class also holds
@@ -80,7 +80,7 @@ public:
      * \return Maximum level.
      */
     int calculateMaxLevels();
-    int calculateMaxLevels(Size s);
+    int calculateMaxLevels(cv::Size s);
     int calculateMaxLevels(QRect r);
 
     /*!
@@ -101,20 +101,20 @@ public:
     ////////////////////////
     /*!
      * \brief getFrameLast Returns the last/newest magnified image. After that, the first/oldest frame is deleted.
-     * \return A Mat with the same size like the images in the provided processingBuffer.
+     * \return A cv::Mat with the same size like the images in the provided processingBuffer.
      */
-    Mat getFrameLast();
+    cv::Mat getFrameLast();
     /*!
      * \brief getFrameFirst Returns the first/oldest magnified image. After that, this frame will be deleted.
-     * \return A Mat with the same size like the images in the provided processingBuffer.
+     * \return A cv::Mat with the same size like the images in the provided processingBuffer.
      */
-    Mat getFrameFirst();
+    cv::Mat getFrameFirst();
     /*!
      * \brief getFrameAt Returns a magnified image on a specified position in the internal buffer.
      * \param n Position with 0 <= n < buffersize.
-     * \return A Mat with the same size like the images in the provided processingBuffer.
+     * \return A cv::Mat with the same size like the images in the provided processingBuffer.
      */
-    Mat getFrameAt(int n);
+    cv::Mat getFrameAt(int n);
     /*!
      * \brief getBufferSize Size of the internal Buffer, holding the magnified images.
      * \return Int with Size < processingBuffer that is provided.
@@ -143,7 +143,7 @@ private:
      * \brief processingBuffer Pointer to processing buffer, given in constructor. Holds images that have to
      *  be processed (important for playing videos). Is either 2 or a power of two (see getOptimalBufferSize())
      */
-    vector<Mat> *processingBuffer;
+    vector<cv::Mat> *processingBuffer;
 
     ////////////////////////
     ///External Settings //
@@ -190,39 +190,41 @@ private:
 
     int width;
 
+    int breathMeasureOutput;
+
     ////////////////////////
     ///Cache ///////// ///////
     ////////////////////////
     /*!
      * \brief magnifiedBuffer (Both) Holds magnified images, that are not yet given to the GUI.
      */
-    vector<Mat> magnifiedBuffer;
+    vector<cv::Mat> magnifiedBuffer;
     /*!
      * \brief tempBuffer (Motion magnification) Holds image pyramid with the difference of two
      *  filtered images from lowpassHi & lowpassLo on each level. The upsampled pyramid is a motion
      *  image that will be added to the original image.
      */
-    vector<Mat> motionPyramid;
+    vector<cv::Mat> motionPyramid;
     /*!
      * \brief lowpassHi (Motion magnification) Holds image pyramid of lowpassed current frame with
      *  high cutoff
      */
-    vector<Mat> lowpassHi;
+    vector<cv::Mat> lowpassHi;
     /*!
      * \brief lowpassLo (Motion magnification) Holds image pyramid of lowpassed current frame with
      *  low cutoff
      */
-    Mat prevFrame;
+    cv::Mat prevFrame;
     /*!
      * \brief prevFrame (Motion magnification) Holds previous frame to detect motion.
      */
 
-    vector<Mat> lowpassLo;
+    vector<cv::Mat> lowpassLo;
     /*!
      * \brief downSampledMat (Color magnification) Holds 2*fps rounded to next power of 2
      *  downsampled and to 1 column reshaped images.
      */
-    Mat downSampledMat;
+    cv::Mat downSampledMat;
 
     std::shared_ptr<RieszPyramid> oldPyr;
     std::shared_ptr<RieszPyramid> curPyr;
@@ -238,19 +240,19 @@ private:
      * \param dst Destination image.
      * \param currentLevel Level of image pyramid that is amplified.
      */
-    void amplifyLaplacian(const Mat &src, Mat &dst, int currentLevel);
+    void amplifyLaplacian(const cv::Mat &src, cv::Mat &dst, int currentLevel);
     /*!
      * \brief attenuate (Motion magnification) Attenuates the 2 last channels of a Lab-image.
      * \param src Source image.
      * \param dst Destination image.
      */
-    void attenuate(const Mat &src, Mat &dst);
+    void attenuate(const cv::Mat &src, cv::Mat &dst);
     /*!
      * \brief amplifyGaussian (Color magnification) Amplifies a Gaussian image pyramid.
      * \param src Source image.
      * \param dst Amplified image.
      */
-    void amplifyGaussian(const Mat &src, Mat &dst);
+    void amplifyGaussian(const cv::Mat &src, cv::Mat &dst);
 
 };
 

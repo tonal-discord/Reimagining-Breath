@@ -34,7 +34,7 @@
 
 #define M_PI 3.14159265358979323846264338327950288
 
-using namespace cv;
+//using namespace cv;
 using namespace std;
 
 ////////////////////////
@@ -48,7 +48,7 @@ using namespace std;
  * \param maxImages Maximum number of images hold in dst. If columns of dst > maxImages, the most
  *  left column is deleted. Value should be a power of 2 for fast DFT.
  */
-void img2tempMat(const Mat &frame, Mat &dst, int maxImages);
+void img2tempMat(const cv::Mat &frame, cv::Mat &dst, int maxImages);
 /*!
  * \brief tempMat2img (Color Magnification) Takes a Mat of line-concatenated frames and reshapes 1 column back into a frame.
  * \param src Mat of concatenated frames.
@@ -56,7 +56,7 @@ void img2tempMat(const Mat &frame, Mat &dst, int maxImages);
  * \param frameSize The destination size the reshaped frame shall have.
  * \param frame Output frame with size frameSize.
  */
-void tempMat2img(const Mat &src, int position, const Size &frameSize, Mat &frame);
+void tempMat2img(const cv::Mat &src, int position, const cv::Size &frameSize, cv::Mat &frame);
 /*!
  * \brief createIdealBandpassFilter (Color Magnification) Creates a filter mask for an ideal filter.
  * \param filter Filter mask.
@@ -64,7 +64,7 @@ void tempMat2img(const Mat &src, int position, const Size &frameSize, Mat &frame
  * \param cutoffHi Upper cutoff frequency.
  * \param framerate Framerate of processed video.
  */
-void createIdealBandpassFilter(Mat &filter, double cutoffLo, double cutoffHi, double framerate);
+void createIdealBandpassFilter(cv::Mat &filter, double cutoffLo, double cutoffHi, double framerate);
 
 ////////////////////////
 ///Filter //////////////
@@ -78,7 +78,7 @@ void createIdealBandpassFilter(Mat &filter, double cutoffLo, double cutoffHi, do
  * \param cutoffLo Lower cutoff frequency.
  * \param cutoffHi Higher cutoff frequency.
  */
-void iirFilter(const Mat &src, Mat &dst, Mat &lowpassHi, Mat &lowpassLo, double cutoffLo, double cutoffHi);
+void iirFilter(const cv::Mat &src, cv::Mat &dst, cv::Mat &lowpassHi, cv::Mat &lowpassLo, double cutoffLo, double cutoffHi);
 /*!
  * \brief iirWaveletFilter (Wavelet Magnification) Applies an iirFilter (in space domain) on 1 level of a DWT.
  * \param src
@@ -88,7 +88,7 @@ void iirFilter(const Mat &src, Mat &dst, Mat &lowpassHi, Mat &lowpassLo, double 
  * \param cutoffLo
  * \param cutoffHi
  */
-void iirWaveletFilter(const vector<Mat> &src, vector<Mat> &dst, vector<Mat> &lowpassHi, vector<Mat> &lowpassLo, double cutoffLo, double cutoffHi);
+void iirWaveletFilter(const vector<cv::Mat> &src, vector<cv::Mat> &dst, vector<cv::Mat> &lowpassHi, vector<cv::Mat> &lowpassLo, double cutoffLo, double cutoffHi);
 /*!
  * \brief idealFilter (Color Magnification)
  * \param src
@@ -97,7 +97,7 @@ void iirWaveletFilter(const vector<Mat> &src, vector<Mat> &dst, vector<Mat> &low
  * \param cutoffHi
  * \param framerate
  */
-void idealFilter(const Mat &src, Mat &dst, double cutoffLo, double cutoffHi, double framerate);
+void idealFilter(const cv::Mat &src, cv::Mat &dst, double cutoffLo, double cutoffHi, double framerate);
 
 ///
 // From https://github.com/tbl3rd/Pyramids

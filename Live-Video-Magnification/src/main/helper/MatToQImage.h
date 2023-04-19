@@ -31,8 +31,8 @@
 #include <opencv2/core.hpp>
 #include <opencv2/highgui.hpp>
 
-using namespace cv;
+//using namespace cv;
 
-QImage MatToQImage(const Mat&);
+QImage MatToQImage(const cv::Mat&);
 
 #endif // MATTOQIMAGE_H

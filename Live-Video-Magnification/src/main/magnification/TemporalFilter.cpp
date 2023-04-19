@@ -24,10 +24,11 @@
 
 #include "main/magnification/TemporalFilter.h"
 
+//using namespace cv;
 ////////////////////////
 ///Filter //////////////
 ////////////////////////
-void iirFilter(const Mat &src, Mat &dst, Mat &lowpassHi, Mat &lowpassLo,
+void iirFilter(const cv::Mat &src, cv::Mat &dst, cv::Mat &lowpassHi, cv::Mat &lowpassLo,
                double cutoffLo, double cutoffHi)
 {
     // Set minimum for cutoff, so low cutoff gets faded out
@@ -39,15 +40,15 @@ void iirFilter(const Mat &src, Mat &dst, Mat &lowpassHi, Mat &lowpassLo,
      * more than the old ones (= \param lowpass*), so long lasting movements are faded out fast.
      * The other way, a low cutoff evens out fast movements ocurring only in a few number of src images. */
 
-    Mat tmp1 = (1-cutoffHi)*lowpassHi + cutoffHi*src;
-    Mat tmp2 = (1-cutoffLo)*lowpassLo + cutoffLo*src;
+    cv::Mat tmp1 = (1-cutoffHi)*lowpassHi + cutoffHi*src;
+    cv::Mat tmp2 = (1-cutoffLo)*lowpassLo + cutoffLo*src;
     lowpassHi = tmp1;
     lowpassLo = tmp2;
 
     dst = lowpassHi - lowpassLo;
 }
 
-void iirWaveletFilter(const vector<Mat> &src, vector<Mat> &dst, vector<Mat> &lowpassHi, vector<Mat> &lowpassLo,
+void iirWaveletFilter(const vector<cv::Mat> &src, vector<cv::Mat> &dst, vector<cv::Mat> &lowpassHi, vector<cv::Mat> &lowpassLo,
                       double cutoffLo, double cutoffHi)
 {
     // Set minimum for cutoff, so low cutoff gets faded out
@@ -61,8 +62,8 @@ void iirWaveletFilter(const vector<Mat> &src, vector<Mat> &dst, vector<Mat> &low
 
     // Do this for every detail/coefficient image
     for(int dims = 0; dims < 3; dims++) {
-        Mat tmp1 = (1-cutoffHi)*lowpassHi[dims] + cutoffHi*src[dims];
-        Mat tmp2 = (1-cutoffLo)*lowpassLo[dims] + cutoffLo*src[dims];
+        cv::Mat tmp1 = (1-cutoffHi)*lowpassHi[dims] + cutoffHi*src[dims];
+        cv::Mat tmp2 = (1-cutoffLo)*lowpassLo[dims] + cutoffLo*src[dims];
         lowpassHi[dims] = tmp1;
         lowpassLo[dims] = tmp2;
 
@@ -70,42 +71,42 @@ void iirWaveletFilter(const vector<Mat> &src, vector<Mat> &dst, vector<Mat> &low
     }
 }
 
-void idealFilter(const Mat &src, Mat &dst , double cutoffLo, double cutoffHi, double framerate)
+void idealFilter(const cv::Mat &src, cv::Mat &dst , double cutoffLo, double cutoffHi, double framerate)
 {
     if(cutoffLo == 0.00)
         cutoffLo += 0.01;
 
     int channelNrs = src.channels();
-    Mat *channels = new Mat[channelNrs];
+    cv::Mat *channels = new cv::Mat[channelNrs];
     split(src, channels);
 
     // Apply filter on each channel individually
     for (int curChannel = 0; curChannel < channelNrs; ++curChannel) {
-        Mat current = channels[curChannel];
-        Mat tempImg;
+        cv::Mat current = channels[curChannel];
+        cv::Mat tempImg;
 
         int width = current.cols;
-        int height = getOptimalDFTSize(current.rows);
+        int height = cv::getOptimalDFTSize(current.rows);
 
         copyMakeBorder(current, tempImg,
                        0, height - current.rows,
                        0, width - current.cols,
-                       BORDER_CONSTANT, Scalar::all(0));
+                       cv::BORDER_CONSTANT, cv::Scalar::all(0));
 
         // DFT
-        dft(tempImg, tempImg, DFT_ROWS | DFT_SCALE);
+        dft(tempImg, tempImg, cv::DFT_ROWS | cv::DFT_SCALE);
 
         // construct Filter
-        Mat filter = tempImg.clone();
+        cv::Mat filter = tempImg.clone();
         createIdealBandpassFilter(filter, cutoffLo, cutoffHi, framerate);
 
         // apply
-        mulSpectrums(tempImg, filter, tempImg, DFT_ROWS);
+        mulSpectrums(tempImg, filter, tempImg, cv::DFT_ROWS);
 
         // inverse
-        idft(tempImg, tempImg, DFT_ROWS | DFT_SCALE);
+        idft(tempImg, tempImg, cv::DFT_ROWS | cv::DFT_SCALE);
 
-        tempImg(Rect(0, 0, current.cols, current.rows)).copyTo(channels[curChannel]);
+        tempImg(cv::Rect(0, 0, current.cols, current.rows)).copyTo(channels[curChannel]);
     }
     merge(channels, channelNrs, dst);
 
@@ -113,7 +114,7 @@ void idealFilter(const Mat &src, Mat &dst , double cutoffLo, double cutoffHi, do
     delete [] channels;
 }
 
-void createIdealBandpassFilter(Mat &filter, double cutoffLo, double cutoffHi, double framerate)
+void createIdealBandpassFilter(cv::Mat &filter, double cutoffLo, double cutoffHi, double framerate)
 {
     float width = filter.cols;
     float height = filter.rows;
@@ -140,10 +141,10 @@ void createIdealBandpassFilter(Mat &filter, double cutoffLo, double cutoffHi, do
 ////////////////////////
 ///Helper //////////////
 ////////////////////////
-void img2tempMat(const Mat &frame, Mat &dst, int maxImages)
+void img2tempMat(const cv::Mat &frame, cv::Mat &dst, int maxImages)
 {
     // Reshape in 1 column
-    Mat reshaped = frame.reshape(frame.channels(), frame.cols*frame.rows).clone();
+    cv::Mat reshaped = frame.reshape(frame.channels(), frame.cols*frame.rows).clone();
 
     if(frame.channels() == 1)
         reshaped.convertTo(reshaped, CV_32FC1);
@@ -165,9 +166,9 @@ void img2tempMat(const Mat &frame, Mat &dst, int maxImages)
     }
 }
 
-void tempMat2img(const Mat &src, int position, const Size &frameSize, Mat &frame)
+void tempMat2img(const cv::Mat &src, int position, const cv::Size &frameSize, cv::Mat &frame)
 {
-    Mat line = src.col(position).clone();
+    cv::Mat line = src.col(position).clone();
     frame = line.reshape(line.channels(), frameSize.height).clone();
 }
 
