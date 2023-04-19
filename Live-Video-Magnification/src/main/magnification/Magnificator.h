@@ -138,6 +138,8 @@ public:
      */
     int getOptimalBufferSize(int fps);
 
+    int breathMeasureOutput;
+
 private:
     /*!
      * \brief processingBuffer Pointer to processing buffer, given in constructor. Holds images that have to
@@ -190,7 +192,7 @@ private:
 
     int width;
 
-    int breathMeasureOutput;
+
 
     ////////////////////////
     ///Cache ///////// ///////

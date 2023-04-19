@@ -28,6 +28,11 @@
 #include <windows.h>
 #include <stdio.h>
 #include <conio.h>
+#include <tchar.h>
+#include <memoryapi.h>
+#include <handleapi.h>
+#include <iostream>
+#include <WinNT.h>
 
 // Qt
 #include <QtCore/QThread>
@@ -72,6 +77,7 @@ class ProcessingThread : public QThread
         Magnificator magnificator;
         SharedImageBuffer *sharedImageBuffer;
         cv::Mat currentFrame;
+        int temp;
         cv::Mat combinedFrame;
         cv::Mat originalFrame;
         cv::Rect currentROI;

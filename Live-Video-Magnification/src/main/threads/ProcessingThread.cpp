@@ -23,6 +23,7 @@
 /************************************************************************************/
 
 #include "main/threads/ProcessingThread.h"
+#define BUF_SIZE 256
 
 ProcessingThread::ProcessingThread(SharedImageBuffer *sharedImageBuffer, int deviceNumber) : QThread(),
     sharedImageBuffer(sharedImageBuffer),
@@ -77,13 +78,15 @@ bool ProcessingThread::releaseCapture()
 void ProcessingThread::run()
 {
     qDebug() << "Starting processing thread...";
-//    timer.start(); do that here should work. Not sure if should emit it and make a signal, make it public, or what.
+    //    timer.start(); do that here should work. Not sure if should emit it and make a signal, make it public, or what.
     // maybe reset timer before starting (if it was already going.)?
+    HANDLE hMapFile;
+    LPCTSTR pBuf;
     while(1)
     {
-        ////////////////////////// /////// 
-        // Stop thread if doStop=TRUE // 
-        ////////////////////////// /////// 
+        ////////////////////////// ///////
+        // Stop thread if doStop=TRUE //
+        ////////////////////////// ///////
         doStopMutex.lock();
         if(doStop)
         {
@@ -105,62 +108,62 @@ void ProcessingThread::run()
         // Get frame from queue, store in currentFrame, set ROI
         currentFrame=cv::Mat(sharedImageBuffer->getByDeviceNumber(deviceNumber)->get().clone(), currentROI);
 
-        ////////////////////////// ///////// // 
-        // PERFORM IMAGE PROCESSING BELOW // 
-        ////////////////////////// ///////// // 
+        ////////////////////////// ///////// //
+        // PERFORM IMAGE PROCESSING BELOW //
+        ////////////////////////// ///////// //
 
         // Grayscale conversion (in-place operation)
-       if(imgProcFlags.grayscaleOn && (currentFrame.channels() == 3 || currentFrame.channels() == 4)) {
-           cvtColor(currentFrame, currentFrame, cv::COLOR_BGR2GRAY, 1);
-       }
+        if(imgProcFlags.grayscaleOn && (currentFrame.channels() == 3 || currentFrame.channels() == 4)) {
+            cvtColor(currentFrame, currentFrame, cv::COLOR_BGR2GRAY, 1);
+        }
 
-       // Save the original Frame after grayscale conversion, so VideoWriter works correct
-       if(emitOriginal || captureOriginal)
-           originalFrame = currentFrame.clone();
+        // Save the original Frame after grayscale conversion, so VideoWriter works correct
+        if(emitOriginal || captureOriginal)
+            originalFrame = currentFrame.clone();
 
-       // Fill Buffer that is processed by Magnificator
-       fillProcessingBuffer();
+        // Fill Buffer that is processed by Magnificator
+        fillProcessingBuffer();
 
-       if (processingBufferFilled()) {
-           if(imgProcFlags.colorMagnifyOn)
-           {
-               magnificator.colorMagnify();
-               currentFrame = magnificator.getFrameLast();
-               frameNum++;
-           }
-           else if(imgProcFlags.laplaceMagnifyOn)
+        if (processingBufferFilled()) {
+            if(imgProcFlags.colorMagnifyOn)
+            {
+                magnificator.colorMagnify();
+                currentFrame = magnificator.getFrameLast();
+                frameNum++;
+            }
+            else if(imgProcFlags.laplaceMagnifyOn)
 
-           {
-               magnificator.laplaceMagnify();
-               currentFrame = magnificator.getFrameLast();
-               frameNum++;
-           }
-           else if(imgProcFlags.rieszMagnifyOn)
-           {
-               magnificator.rieszMagnify();
-               currentFrame = magnificator.getFrameLast();
-               frameNum++;
-           }
-           else {
-               processingBuffer.erase(processingBuffer.begin());
-               frameNum = 0;
-           }
-       }
+            {
+                magnificator.laplaceMagnify();
+                currentFrame = magnificator.getFrameLast();
+                frameNum++;
+            }
+            else if(imgProcFlags.rieszMagnifyOn)
+            {
+                magnificator.rieszMagnify();
+                currentFrame = magnificator.getFrameLast();
+                frameNum++;
+            }
+            else {
+                processingBuffer.erase(processingBuffer.begin());
+                frameNum = 0;
+            }
+        }
 
-        ////////////////////////// ///////// // 
-        // PERFORM IMAGE PROCESSING ABOVE // 
-        ////////////////////////// ///////// // 
+        ////////////////////////// ///////// //
+        // PERFORM IMAGE PROCESSING ABOVE //
+        ////////////////////////// ///////// //
 
-       // add text of frame number to image.
-//       std::string txt;
-//       txt = "EXHALE. " + std::to_string(contoursSum) ;
-       cv::putText(currentFrame, //target image
-                   "FRAMENUM " + std::to_string(frameNum) , //text
-                   cv::Point(10, currentFrame.rows / 4), //top-left position
-                   cv::FONT_HERSHEY_DUPLEX,
-                   1.0,
-                   CV_RGB(118, 185, 0), //font color
-                   2);
+        // add text of frame number to image.
+        //       std::string txt;
+        //       txt = "EXHALE. " + std::to_string(contoursSum) ;
+        cv::putText(currentFrame, //target image
+                    "FRAMENUM " + std::to_string(frameNum) , //text
+                    cv::Point(10, currentFrame.rows / 4), //top-left position
+                    cv::FONT_HERSHEY_DUPLEX,
+                    1.0,
+                    CV_RGB(118, 185, 0), //font color
+                    2);
 
 
         // Convert cv::Mat to QImage
@@ -171,7 +174,7 @@ void ProcessingThread::run()
         // Save the Stream
         if(doRecord) {
 
-            if(output.isOpened()) { 
+            if(output.isOpened()) {
                 if(captureOriginal) {
 
                     processingMutex.lock();
@@ -191,8 +194,8 @@ void ProcessingThread::run()
         }
 
         // Emit the original image before converting to grayscale
-       if(emitOriginal)
-           emit origFrame(MatToQImage(originalFrame));
+        if(emitOriginal)
+            emit origFrame(MatToQImage(originalFrame));
         // Inform GUI thread of new frame (QImage)
         // emit newFrame(frame);
         emit newFrame(MatToQImage(currentFrame));
@@ -203,7 +206,57 @@ void ProcessingThread::run()
         // Inform GUI of updated statistics
         emit updateStatisticsInGUI(statsData);
 
+    int temp = magnificator.breathMeasureOutput;
+    int *point2;
+    point2 = &temp;
+
+
+    TCHAR szName[]=TEXT("ReimaginingBreath");
+    TCHAR szMsg[]=TEXT("YOssage from first process.");
+
+
+        hMapFile = CreateFileMapping(
+            INVALID_HANDLE_VALUE,    // use paging file
+            NULL,                    // default security
+            PAGE_READWRITE,          // read/write access
+            0,                       // maximum object size (high-order DWORD)
+            BUF_SIZE,                // maximum object size (low-order DWORD)
+            szName);                 // name of mapping object
+
+        if (hMapFile == NULL)
+        {
+            _tprintf(TEXT("Could not create file mapping object (%d).\n"),
+                     GetLastError());
+        }
+        pBuf = (LPTSTR) MapViewOfFile(hMapFile,   // handle to map object
+                                      FILE_MAP_ALL_ACCESS, // read/write permission
+                                      0,
+                                      0,
+                                      BUF_SIZE);
+
+        if (pBuf == NULL)
+        {
+            _tprintf(TEXT("Could not map view of file (%d).\n"),
+                     GetLastError());
+
+            CloseHandle(hMapFile);
+        }
+
+
+
+
+        CopyMemory((PVOID)pBuf, point2, sizeof(int));
+        // _getch();
+
+
+
+
     }
+
+    UnmapViewOfFile(pBuf);
+
+    CloseHandle(hMapFile);
+
     qDebug() << "Stopping processing thread...";
 
 }
@@ -332,7 +385,7 @@ bool ProcessingThread::startRecord(std::string filepath, bool captureOriginal)
     bool isColor = !((imgProcFlags.grayscaleOn)||(currentFrame.channels() == 1));
     // Capture size is doubled if original should be captured too
     cv::Size s = captureOriginal ? cv::Size(w*2, h) : cv::Size(w, h);
- 
+
     bool opened = false;
     output = cv::VideoWriter();
     opened = output.open(filepath, savingCodec, statsData.averageFPS, s, isColor);

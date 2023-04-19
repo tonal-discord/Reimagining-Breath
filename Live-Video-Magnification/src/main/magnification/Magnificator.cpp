@@ -488,7 +488,7 @@ void Magnificator::laplaceMagnify() {
             int numContours = contours.size();
             // draw contours on cv::Mat frame.
 
-            int desiredLongest = 20;
+            int desiredLongest = 25;
             for (int i = 0; i < std::min(numContours, desiredLongest); i++) {
                 cv::drawContours(finalFrame, contours, i, cv::Scalar(0,255,0), 2, cv::LINE_AA);
             }
@@ -603,7 +603,8 @@ void Magnificator::laplaceMagnify() {
                 txt = "EXHALE. " + std::to_string(contoursSum) ;
             }
 
-
+            // Used by processing thread to write to shared mem.
+            breathMeasureOutput = contoursSum;
 //                else {
 //                txt = "NOTHIN. " + std::to_string(contoursSum) ;
 //            }
