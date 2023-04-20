@@ -5,6 +5,7 @@ import cv2
 import pyjoycon, joycon, mouse
 from tkinter import *
 from PIL import Image, ImageTk
+from multiprocessing import shared_memory
 
 class GUI:
 
@@ -222,8 +223,17 @@ class GUI:
         frames.reverse()
         revframes = frames.reverse()
 
+        # init shared memory
+        shm_a = shared_memory.SharedMemory(name="ReimaginingBreath", size=10)
+        # TODO error handle this
+        
         while (self.videoPlaying):
-            msperframe = int((1000//framerate)//self.playrate)
+             
+            # Reads in byte array, convert that to integer using little endian.
+            breathValue = int.from_bytes(bytes(shm_a.buf[:10]), 'little')
+            print("Breath value: ", breathValue)
+
+            msperframe = int((1000//breathValue)//self.playrate)
             self.video_screen.config(text='', image=frames[frame])
             
             if self.reverse:
@@ -245,6 +255,9 @@ class GUI:
             self.window.update() 
             
         self.closeVideo()
+        # Close shared mem
+        shm_a.close()
+
             
 
     def closeVideo(self):
