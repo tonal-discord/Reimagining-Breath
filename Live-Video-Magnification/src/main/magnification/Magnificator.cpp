@@ -539,7 +539,7 @@ void Magnificator::laplaceMagnify() {
                 contoursSum = contoursSum / std::min(numContours, desiredLongest);
             }
 
-            cout << "Avg contours y-value: " << contoursSum << " " << std::min(numContours, desiredLongest) << " Contours. " << endl;
+//            cout << "Avg contours y-value: " << contoursSum << " " << std::min(numContours, desiredLongest) << " Contours. " << endl;
 
 //            // If false positive (changed by over 200 pxls)
 //            if (abs(contoursSum - prevAvgContoursSum) > 200 && !first) {
@@ -558,6 +558,9 @@ void Magnificator::laplaceMagnify() {
             // TODO: make frame num reset when you click stop in GUI (PlayerThread.cpp)
             // write avg contours file to csv
 //            cout << "FRAMES: w" << * *numFrames << endl;
+
+            int temporary = *numFrames;
+
             QFile file("out.csv");
             if (file.open(QIODevice::WriteOnly | QIODevice::Append)) {
                 if(!file.isOpen())

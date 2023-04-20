@@ -121,6 +121,7 @@ void ProcessingThread::run()
         CloseHandle(hMapFile);
     }
 
+    int prevFrameNum = 0;
     // end shared memory init
     while(1)
     {
@@ -248,7 +249,11 @@ void ProcessingThread::run()
 
         temp = magnificator.breathMeasureOutput;
 
-        CopyMemory((PVOID)pBuf, point2, sizeof(int));
+        if (frameNum = prevFrameNum + 30) {
+            CopyMemory((PVOID)pBuf, point2, sizeof(int));
+            prevFrameNum = frameNum;
+        }
+
         // _getch();
     }
 

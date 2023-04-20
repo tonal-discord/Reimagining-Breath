@@ -119,6 +119,7 @@ void PlayerThread::run()
     /////////////////////////////////////
     /// Stop thread if doStop=TRUE /////
     ///////////////////////////////////
+    int prevFrameNum = 0;
     while(!doStop)
     {
         //////////////////////////////////////////////
@@ -233,7 +234,12 @@ void PlayerThread::run()
 
         temp = magnificator.breathMeasureOutput;
 
-        CopyMemory((PVOID)pBuf, point2, sizeof(int));
+        if (frameNum = prevFrameNum + 3000) {
+            CopyMemory((PVOID)pBuf, point2, sizeof(int));
+            cout << "DID IT" << std::to_string(frameNum) << " " << std::to_string(prevFrameNum) << endl;
+            prevFrameNum = frameNum;
+
+        }
 
 
         cv::putText(currentFrame, //target image

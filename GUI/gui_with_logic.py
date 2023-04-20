@@ -230,22 +230,28 @@ class GUI:
         prevValue = 0
         #slope = 0
         updateframe = 0
+        updatetime = 10
         msperframe = int((1000//framerate)//self.playrate)
         while (self.videoPlaying):
              
             # Reads in byte array, convert that to integer using little endian.
             breathValue = int.from_bytes(bytes(shm_a.buf[:10]), 'little')
-            #print("Breath value: ", breathValue)
-            if updateframe ==15:
+            print("Breath value: ", breathValue)
+            if updateframe ==updatetime:
 
                 breathValue = int(breathValue)
                 #self.playrate = (abs((breathValue - 350))/(475-350))*(3-.1)+.1
-                msperframe = int((1000//framerate)//self.playrate)
-                print(str((breathValue-prevValue)/15))
-                if ((breathValue-prevValue)/15)>0:
+                print(str((breathValue-prevValue)/updatetime))
+                if ((breathValue-prevValue)/updatetime)>.3:
                    self.reverse = True
-                elif ((breathValue-prevValue)/15)<=0:
+                elif ((breathValue-prevValue)/updatetime)<-.3:
                     self.reverse = False
+                #elif (-.3<=(breathValue-prevValue)/updatetime<=.3):
+                 #   self.playrate = 0
+                #print(str(self.playrate))
+                
+                else:
+                    msperframe = int((1000//framerate)//self.playrate)
                 updateframe = 0
                 prevValue = breathValue
             
