@@ -226,32 +226,41 @@ class GUI:
         # init shared memory
         shm_a = shared_memory.SharedMemory(name="ReimaginingBreath", size=10)
         # TODO error handle this
-        #slopelist = []
+        slopelist = []
         prevValue = 0
-        #slope = 0
+        slope = 0
+        i = 0
         updateframe = 0
-        updatetime = 10
+        updatetime = 2
         msperframe = int((1000//framerate)//self.playrate)
         while (self.videoPlaying):
              
             # Reads in byte array, convert that to integer using little endian.
             breathValue = int.from_bytes(bytes(shm_a.buf[:10]), 'little')
             print("Breath value: ", breathValue)
-            if updateframe ==updatetime:
+            slopelist.append(breathValue-prevValue))
+            if len(slopelist) >=6:
+                slopelist.pop(0)
+            for value in slopelist:
+                i ++
+                slope += i
+            if i < 6:
+                slope = slope/i
+            else:
+                slope = slope/6
+            if updateframe == updatetime:
 
                 breathValue = int(breathValue)
-                #self.playrate = (abs((breathValue - 350))/(475-350))*(3-.1)+.1
+                #self.playrate = (abs((slope - -10))/(10--10))*(1-.05)+.05
                 print(str((breathValue-prevValue)/updatetime))
-                if ((breathValue-prevValue)/updatetime)>.3:
+                if slope>0:
                    self.reverse = True
-                elif ((breathValue-prevValue)/updatetime)<-.3:
+                elif ((breathValue-prevValue)/updatetime)<0:
                     self.reverse = False
-                #elif (-.3<=(breathValue-prevValue)/updatetime<=.3):
-                 #   self.playrate = 0
-                #print(str(self.playrate))
+               
                 
-                else:
-                    msperframe = int((1000//framerate)//self.playrate)
+                
+                msperframe = int((1000//framerate)//self.playrate)
                 updateframe = 0
                 prevValue = breathValue
             
