@@ -39,7 +39,7 @@ class GUI:
         self.videoPlaying = False
 
         # Video playback logic variables
-        self.playrate = 1
+        self.playrate = .5
         self.reverse = False
 
         # Drawing & preprocessing
@@ -226,15 +226,29 @@ class GUI:
         # init shared memory
         shm_a = shared_memory.SharedMemory(name="ReimaginingBreath", size=10)
         # TODO error handle this
-        
+        #slopelist = []
+        prevValue = 0
+        #slope = 0
+        updateframe = 0
+        msperframe = int((1000//framerate)//self.playrate)
         while (self.videoPlaying):
              
             # Reads in byte array, convert that to integer using little endian.
             breathValue = int.from_bytes(bytes(shm_a.buf[:10]), 'little')
-            print("Breath value: ", breathValue)
-            breathValue = int(breathValue)
-            self.playrate = ((breathValue - 300)/(600-300))*(3-.25)+.25
-            msperframe = int((1000//framerate)//self.playrate)
+            #print("Breath value: ", breathValue)
+            if updateframe ==15:
+
+                breathValue = int(breathValue)
+                #self.playrate = (abs((breathValue - 350))/(475-350))*(3-.1)+.1
+                msperframe = int((1000//framerate)//self.playrate)
+                print(str((breathValue-prevValue)/15))
+                if ((breathValue-prevValue)/15)>0:
+                   self.reverse = True
+                elif ((breathValue-prevValue)/15)<=0:
+                    self.reverse = False
+                updateframe = 0
+                prevValue = breathValue
+            
             self.video_screen.config(text='', image=frames[frame])
             
             if self.reverse:
@@ -250,9 +264,10 @@ class GUI:
                     break
             
             if (abs(frame) == framecount-8):
-                self.reverse = not self.reverse
+                #self.reverse = not self.reverse
                 frame = frame + framecount if frame < 0 else frame - framecount
-
+            #prevValue = breathValue
+            updateframe +=1
             self.window.update() 
             
         self.closeVideo()
