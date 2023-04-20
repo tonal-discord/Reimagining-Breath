@@ -232,8 +232,9 @@ class GUI:
             # Reads in byte array, convert that to integer using little endian.
             breathValue = int.from_bytes(bytes(shm_a.buf[:10]), 'little')
             print("Breath value: ", breathValue)
-
-            msperframe = int((1000//breathValue)//self.playrate)
+            breathValue = int(breathValue)
+            self.playrate = ((breathValue - 300)/(600-300))*(3-.25)+.25
+            msperframe = int((1000//framerate)//self.playrate)
             self.video_screen.config(text='', image=frames[frame])
             
             if self.reverse:
