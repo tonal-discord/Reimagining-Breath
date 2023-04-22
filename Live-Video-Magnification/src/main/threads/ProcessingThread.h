@@ -108,6 +108,9 @@ class ProcessingThread : public QThread
         cv::Mat combineFrames(cv::Mat &frame1, cv::Mat &frame2);
         QMutex recordMutex;
         int frameNum;
+        int prevFrameNum = 0;
+        int breathValues[3];
+        float prevSumm = 0;
 
     protected:
         void run();

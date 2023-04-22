@@ -136,6 +136,9 @@ private:
         std::vector<cv::Mat> processingBuffer;
         int processingBufferLength;
         int frameNum = 0;
+        int prevFrameNum = 0;
+        int breathValues[3];
+        float prevSumm = 0;
 
 
 protected:

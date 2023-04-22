@@ -42,6 +42,9 @@ ProcessingThread::ProcessingThread(SharedImageBuffer *sharedImageBuffer, int dev
     statsData.nFramesProcessed=0;
     captureOriginal = false;
     frameNum = 0;
+    prevFrameNum = 0;
+    breathValues[3];
+    prevSumm = 0;
     this->processingBufferLength = 2;
     this->magnificator = Magnificator(&processingBuffer, &imgProcFlags, &imgProcSettings, &frameNum);
     this->output = cv::VideoWriter();
@@ -121,9 +124,6 @@ void ProcessingThread::run()
         CloseHandle(hMapFile);
     }
     // end shared memory init
-    int prevFrameNum = 0;
-    int breathValues[3];
-    float prevSumm;
     while(1)
     {
         ////////////////////////// ///////
@@ -133,6 +133,7 @@ void ProcessingThread::run()
         if(doStop)
         {
             doStop=false;
+            prevFrameNum = frameNum;
             doStopMutex.unlock();
             break;
         }
@@ -252,8 +253,11 @@ void ProcessingThread::run()
 
         temp = magnificator.breathMeasureOutput;
 
-        // this doesn't do anything (all of these ifs.) Delete them.
+
         cout << "put: " << frameNum-1 - prevFrameNum << endl;
+        if ((frameNum -1 - prevFrameNum) > 2 || (frameNum -1 - prevFrameNum) < 0) {
+            prevFrameNum = frameNum;
+        }
         breathValues[frameNum-1 - prevFrameNum] = temp;
         if (frameNum - prevFrameNum == 3) {
             cout << frameNum << " " << prevFrameNum << endl;

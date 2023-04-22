@@ -50,6 +50,9 @@ PlayerThread::PlayerThread(const std::string filepath, int width, int height, do
     fpsQueue.clear();
 
     frameNum = 0;
+    prevFrameNum = 0;
+    breathValues[3];
+    prevSumm = 0;
     this->magnificator = Magnificator(&processingBuffer, &imgProcFlags, &imgProcSettings, &frameNum);
     this->cap = cv::VideoCapture();
     currentWriteIndex = 0;
@@ -144,6 +147,7 @@ void PlayerThread::run()
         if(doPause)
         {
             doPlay = false;
+            prevFrameNum = frameNum; // TODO maybe just thjis not the if >2?
             doStopMutex.unlock();
             break;
         }
@@ -237,6 +241,10 @@ void PlayerThread::run()
 
         temp = magnificator.breathMeasureOutput;
 
+        // keep array index in bounds
+        if ((frameNum -1 - prevFrameNum) > 2 || (frameNum -1 - prevFrameNum) < 0) {
+            prevFrameNum = frameNum;
+        }
         breathValues[frameNum-1 - prevFrameNum] = temp;
         if (frameNum - prevFrameNum == 3) {
             cout << frameNum << " " << prevFrameNum << endl;
