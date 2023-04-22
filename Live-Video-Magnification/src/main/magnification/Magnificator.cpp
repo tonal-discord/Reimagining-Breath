@@ -289,6 +289,73 @@ int circBuffMax3() {
 }
 
 
+// TODO delete these functions (useful for reference sort of)
+// using  crashes unsurprisingly.
+// https://cullensun.medium.com/agglomerative-clustering-for-opencv-contours-cd74719b678e
+// input a grayscale image.
+int calculateContourDistance(vector<cv::Point> contour1, vector<cv::Point> contour2) {
+
+    cv::Rect boundRect1 = cv::boundingRect(contour1);
+    cv::Rect boundRect2 = cv::boundingRect(contour2);
+
+
+    int height_1 = boundRect1.height;
+    int width_1 = boundRect1.width;
+    int x_1 = boundRect1.x;
+    int y_1 = boundRect1.y;
+    int c_x1 = x_1 + width_1/2;
+    int c_y1 = y_1 + height_1/2;
+
+    int height_2 = boundRect2.height;
+    int width_2 = boundRect2.width;
+    int x_2 = boundRect2.x;
+    int y_2 = boundRect2.y;
+    int c_x2 = x_2 + width_2/2;
+    int c_y2 = y_2 + height_2/2;
+
+    return max(abs(c_x1-c_x2) - (width_1 + width_2)/2, abs(c_y1 - c_y2) - (height_1 + height_2)/2);
+}
+
+vector<cv::Point> mergeContours(vector<cv::Point> contour1, vector<cv::Point> contour2) {
+    vector<cv::Point> out;
+//    out.reserve(contour1.size(), contour2.size());
+    out.insert(out.end(),contour1.begin(), contour1.end());
+    out.insert(out.end(),contour2.begin(), contour2.end());
+    return out;
+}
+
+vector<vector<cv::Point>> agglomerativeCluster(vector<vector<cv::Point>> contours, float thresholdDistance) {
+    vector<vector<cv::Point>> currentContours = contours;
+    while (currentContours.size() > 1) {
+        int minDistance = 0;
+        vector<int> minCoordinate;
+
+        for (int x = 0; x < currentContours.size()-1; x++) {
+            for (int y = x+1; y < currentContours.size(); y++) {
+                int distance = calculateContourDistance(currentContours[x], currentContours[y]);
+                if (minDistance == 0) {
+                    minDistance = distance;
+                    int coord[2] = {x, y};
+                    minCoordinate.assign(coord, coord+1);
+                }
+                else if (distance < minDistance) {
+                    minDistance = distance;
+                    int coord[2] = {x, y};
+                    minCoordinate.assign(coord, coord+1);
+                }
+            }
+        }
+
+        if (minDistance < thresholdDistance) {
+            currentContours[minCoordinate.at(0)] = mergeContours(currentContours[minCoordinate.at(0)], currentContours[minCoordinate.at(1)]);
+            currentContours.erase(currentContours.begin() + minCoordinate.at(1));
+        }
+
+    }
+}
+
+
+
 bool compareContoursPerimeter(vector<cv::Point> cont1, vector<cv::Point> cont2) { return cv::arcLength(cont1, 0) > cv::arcLength(cont2, 0); }
 
 bool compareContoursArea(vector<cv::Point> cont1, vector<cv::Point> cont2) { return cv::contourArea(cont1) > cv::contourArea(cont2); }
@@ -470,6 +537,8 @@ void Magnificator::laplaceMagnify() {
 
 
             // TODO try to track specific reocurring contours? Because sometiems it tracks shoulders which increases y values, sometiems only chest.
+            // The average Y value doesn't really matter, the CHANGE in Y matters.
+            // FIND CLUSTERS OF CONTOURS AND TRACK.
             // contours approach below
             vector<vector<cv::Point>> contours;
             cv::findContours(threshFrame, contours, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_TC89_L1); // maybe experiment w/ diff modes
@@ -510,22 +579,38 @@ void Magnificator::laplaceMagnify() {
 
             // Iterate through up to the desiredLongest largest contours.
             int contoursSum = 0;
+            std::vector<std::pair<int, int>> avgCoords;
+
             for (size_t i = 0; i < std::min(numContours, desiredLongest); i++) {
 
 
 //                cout << contours[i] << endl; // Contours is a vector of contours(which are stored as point vectors)
                 vector<cv::Point> pont = contours[i]; // pont is a contour defined as a vector consistuing of multiple points.
-                int vectorSum = 0;
+                int ySum = 0;
+                int xSum = 0;
 
                 for (size_t j = 0; j < pont.size(); j++) {
-                     vectorSum += pont[j].y; // average y position of the vector
-//                    if (pont[j].y < vectorSum) { // minimum
-//                        vectorSum = pont[j].y;
+                    ySum += pont[j].y; // A y coord of one the the vector points.
+                    xSum += pont[j].x; // A x coord of one the the vector points.
+//                    if (pont[j].y < ySum) { // minimum
+//                        ySum = pont[j].y;
 //                    }
                 }
-                vectorSum /= pont.size();
+                // TODO: This may work to cluster them?
+                // https://www.geeksforgeeks.org/closest-pair-of-points-using-divide-and-conquer-algorithm/
+                // avg x and y of this contour
+                ySum /= pont.size();
+                xSum /= pont.size();
 
-                contoursSum += vectorSum;
+                // Add the par of avg x and y points to a vector
+                avgCoords.push_back(std::pair<int, int>(xSum, ySum));
+
+                contoursSum += ySum;
+            }
+
+            if (avgCoords.size() > 0) {
+                // accessing coord pairs of avgCoords
+//                cout << "It IS: " << std::to_string(avgCoords.at(0).first) << endl;
             }
 
             // if only 15 contours, likely not breathing.
