@@ -613,13 +613,13 @@ void Magnificator::laplaceMagnify() {
 //            }
             prevAvgContoursSum = contoursSum;
 
-            cv::putText(output, //target image
-                        txt, //text
-                        cv::Point(10, output.rows / 2), //top-left position
-                        cv::FONT_HERSHEY_DUPLEX,
-                        1.0,
-                        CV_RGB(118, 185, 0), //font color
-                        2);
+//            cv::putText(output, //target image
+//                        txt, //text
+//                        cv::Point(10, output.rows / 2), //top-left position
+//                        cv::FONT_HERSHEY_DUPLEX,
+//                        1.0,
+//                        CV_RGB(118, 185, 0), //font color
+//                        2);
 
 
 

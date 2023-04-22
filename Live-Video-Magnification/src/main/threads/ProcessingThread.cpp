@@ -91,7 +91,7 @@ void ProcessingThread::run()
 
 
     TCHAR szName[]=TEXT("ReimaginingBreath");
-    TCHAR szMsg[]=TEXT("YOssage from first process.");
+//    TCHAR szMsg[]=TEXT("YOssage from first process.");
 
 
     hMapFile = CreateFileMapping(
@@ -120,9 +120,8 @@ void ProcessingThread::run()
 
         CloseHandle(hMapFile);
     }
-
-    int prevFrameNum = 0;
     // end shared memory init
+    int prevFrameNum = 0;
     while(1)
     {
         ////////////////////////// ///////
@@ -188,6 +187,7 @@ void ProcessingThread::run()
             else {
                 processingBuffer.erase(processingBuffer.begin());
                 frameNum = 0;
+                prevFrameNum = 0;
             }
         }
 
@@ -198,8 +198,10 @@ void ProcessingThread::run()
         // add text of frame number to image.
         //       std::string txt;
         //       txt = "EXHALE. " + std::to_string(contoursSum) ;
+
+        cout << std::to_string(frameNum) << endl;
         cv::putText(currentFrame, //target image
-                    "FRAMENUM " + std::to_string(frameNum) , //text
+                    "FRAME " + std::to_string(frameNum) + ", " + std::to_string(prevFrameNum), //text
                     cv::Point(10, currentFrame.rows / 4), //top-left position
                     cv::FONT_HERSHEY_DUPLEX,
                     1.0,
@@ -249,7 +251,7 @@ void ProcessingThread::run()
 
         temp = magnificator.breathMeasureOutput;
 
-        if (frameNum = prevFrameNum + 30) {
+        if (frameNum == prevFrameNum + 30) {
             CopyMemory((PVOID)pBuf, point2, sizeof(int));
             prevFrameNum = frameNum;
         }

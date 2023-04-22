@@ -224,6 +224,7 @@ void PlayerThread::run()
         }
         else {
             frameNum = 0;
+            prevFrameNum = 0;
             // Read frames unmagnified
             currentFrame = processingBuffer.at(getCurrentReadIndex());
             // Erase to keep buffer size
@@ -234,21 +235,19 @@ void PlayerThread::run()
 
         temp = magnificator.breathMeasureOutput;
 
-        if (frameNum = prevFrameNum + 3000) {
+        if (frameNum == prevFrameNum + 30) {
             CopyMemory((PVOID)pBuf, point2, sizeof(int));
-            cout << "DID IT" << std::to_string(frameNum) << " " << std::to_string(prevFrameNum) << endl;
             prevFrameNum = frameNum;
-
         }
 
 
-        cv::putText(currentFrame, //target image
-                    "FRAMENUM " + std::to_string(frameNum) , //text
-                    cv::Point(10, currentFrame.rows / 4), //top-left position
-                    cv::FONT_HERSHEY_DUPLEX,
-                    1.0,
-                    CV_RGB(118, 185, 0), //font color
-                    2);
+//        cv::putText(currentFrame, //target image
+//                    "FRAMENUM " + std::to_string(frameNum) , //text
+//                    cv::Point(10, currentFrame.rows / 4), //top-left position
+//                    cv::FONT_HERSHEY_DUPLEX,
+//                    1.0,
+//                    CV_RGB(118, 185, 0), //font color
+//                    2);
         frame = MatToQImage(currentFrame);
         if(emitOriginal) {
             originalFrame = MatToQImage(originalBuffer.front());
