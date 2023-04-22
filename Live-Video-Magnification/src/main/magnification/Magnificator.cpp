@@ -181,7 +181,7 @@ string type2str(int type) {
   return r;
 }
 
-// TODO make a nice class
+// TODO make a nice class OR delete
 int buff[30];
 int front = 0;
 int back = 0;
@@ -288,7 +288,10 @@ int circBuffMax3() {
 
 }
 
-bool compareContours(vector<cv::Point> cont1, vector<cv::Point> cont2) { return cv::arcLength(cont1, 0) > cv::arcLength(cont2, 0); }
+
+bool compareContoursPerimeter(vector<cv::Point> cont1, vector<cv::Point> cont2) { return cv::arcLength(cont1, 0) > cv::arcLength(cont2, 0); }
+
+bool compareContoursArea(vector<cv::Point> cont1, vector<cv::Point> cont2) { return cv::contourArea(cont1) > cv::contourArea(cont2); }
 
 int prevAvgContoursSum = 0; // todo fix this
 int first = 1;
@@ -466,29 +469,28 @@ void Magnificator::laplaceMagnify() {
             // TODO: maybe do some bluring for noise reduction? as in https://docs.opencv.org/3.4/da/d0c/tutorial_bounding_rects_circles.html
 
 
-
+            // TODO try to track specific reocurring contours? Because sometiems it tracks shoulders which increases y values, sometiems only chest.
             // contours approach below
             vector<vector<cv::Point>> contours;
             cv::findContours(threshFrame, contours, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_TC89_L1); // maybe experiment w/ diff modes
             // like CV_RETR_EXTERNAL might help a TON.
 
-//            ImageProcessingSettings
 
-//            int h = input.size().height;;
 //            cv::Mat finalFrame = cv::Mat::zeros(imgProcSettings->frameHeight, imgProcSettings->frameWidth, CV_8UC3); // don't remember why this is here and why it's 8UC3 not 8UC1.
             cv::Mat finalFrame = cv::Mat::zeros(input.size().height, input.size().width, CV_8UC3); // don't remember why this is here and why it's 8UC3 not 8UC1.
-//            cv::Mat finalFrame;
+
 
 
 
 
             // sort descending from largest contour.
-            std::sort(contours.begin(), contours.end(), compareContours);
+            std::sort(contours.begin(), contours.end(), compareContoursArea);
 
             int numContours = contours.size();
-            // draw contours on cv::Mat frame.
+
 
             int desiredLongest = 50;
+            // draw contours on cv::Mat frame.
             for (int i = 0; i < std::min(numContours, desiredLongest); i++) {
                 cv::drawContours(finalFrame, contours, i, cv::Scalar(0,255,0), 2, cv::LINE_AA);
             }
@@ -498,7 +500,7 @@ void Magnificator::laplaceMagnify() {
 
             output = finalFrame; // this is the frame after contours have been added.
 
-            // save the very first frame
+            // save the very first contours frame
             if (first) {
                 firstContours = output;
             } else {
@@ -506,15 +508,8 @@ void Magnificator::laplaceMagnify() {
             }
 
 
-//             WORKS! TODO: If tehre are a few high contours, definitely not breathing but it thinks it is.
-            // So, need to exclude if there are few contours.
-            // Taking average y of contour vs the minimu of contour doesn't change anything.
-            // TODO: Only interested in contours that move a lot and stay around.
-
-
-            int contoursSum = 0;
-
             // Iterate through up to the desiredLongest largest contours.
+            int contoursSum = 0;
             for (size_t i = 0; i < std::min(numContours, desiredLongest); i++) {
 
 
@@ -533,33 +528,14 @@ void Magnificator::laplaceMagnify() {
                 contoursSum += vectorSum;
             }
 
-            if (numContours==0) {
+            // if only 15 contours, likely not breathing.
+            if (numContours <= 15) {
                 contoursSum = 0;
             } else {
                 contoursSum = contoursSum / std::min(numContours, desiredLongest);
             }
 
-//            cout << "Avg contours y-value: " << contoursSum << " " << std::min(numContours, desiredLongest) << " Contours. " << endl;
-
-//            // If false positive (changed by over 200 pxls)
-//            if (abs(contoursSum - prevAvgContoursSum) > 200 && !first) {
-//                contoursSum = prevAvgContoursSum;
-//                if (first) {
-//                     first = 0;
-//                }
-//            }
-
-
-            // TODO: If there are many contours, that have changed are breathing. Need a way to do this.
-            // next steps
-            // This is because now if you hold breath, someimtes 1-10 contours pop up higher or lower, so then it thinks it's a breath.
-            // TODO: also includ esome sort of time-based thing, might not want/need to check every frame if the contours have moved.
-
-            // TODO: make frame num reset when you click stop in GUI (PlayerThread.cpp)
-            // write avg contours file to csv
-//            cout << "FRAMES: w" << * *numFrames << endl;
-
-
+            cout << "Avg contours y-value: " << contoursSum << " # contours: " << std::min(numContours, desiredLongest) << " Contours. " << endl;
 
 
             // set initial prevavgcontourssum if first frame.
@@ -567,41 +543,19 @@ void Magnificator::laplaceMagnify() {
                 prevAvgContoursSum = contoursSum;
 //                prevNumContours = numContours;
             }
-//            char print[20];
-//            // if avg contours have moved up
-            // if most contours have moved.
-            std::string txt;
-            if (contoursSum - prevAvgContoursSum > 10) {
-                circBuffInsert(20);
-//                txt = "INHALE. " + std::to_string(contoursSum) ;
-            }
-            // else if avg contours have moved down
-            else if (contoursSum - prevAvgContoursSum < -10) {
-//                txt = "EXHALE. " + std::to_string(contoursSum) ;
-                circBuffInsert(10);
-            } else {
-//                txt = "NOTHIN. " + std::to_string(contoursSum) ;
-                circBuffInsert(0);
-            }
-//            cout << print;
-            int temp = circBuffAvg();
-            if (temp > 15) {
-                txt = "INHALE. " + std::to_string(circBuffLength()) ;
-            }
-            else if (temp < 15 && temp > 5) {
-                txt = "EXHALE. " + std::to_string(contoursSum) ;
-            }
 
             // Used by processing thread to write to shared mem.
             breathMeasureOutput = contoursSum;
-//                else {
-//                txt = "NOTHIN. " + std::to_string(contoursSum) ;
-//            }
+
             prevAvgContoursSum = contoursSum;
 
+
+
+//            std::string txt;
+//            txt = "TEST. " + std::to_string(contoursSum) ;
 //            cv::putText(output, //target image
 //                        txt, //text
-//                        cv::Point(10, output.rows / 2), //top-left position
+//                        cv::Point(10, output.rows / 3), //top-left position
 //                        cv::FONT_HERSHEY_DUPLEX,
 //                        1.0,
 //                        CV_RGB(118, 185, 0), //font color

@@ -247,14 +247,14 @@ void PlayerThread::run()
         }
         breathValues[frameNum-1 - prevFrameNum] = temp;
         if (frameNum - prevFrameNum == 3) {
-            cout << frameNum << " " << prevFrameNum << endl;
+
 
             float summ = 0;
             for (int i = 0; i < 3; i++) {
                 summ += breathValues[i];
             }
             summ /= 3;
-            cout << "summ: " << breathValues[0] << " " << breathValues[1] << " " << breathValues [2] << " = " <<  summ << endl;
+
 
             // for first one, initialize prevSumm.
             if (frameNum == 3) {
@@ -265,11 +265,9 @@ void PlayerThread::run()
 
             // if massive jump, make slope +/-25.
             if ((summ - prevSumm)/2 > 25) {
-                cout << "one" << endl;
                 summ = prevSumm + 50;
             }
             else if ((summ - prevSumm)/2 < -25) {
-                cout << "two" << endl;
                 summ = prevSumm - 50;
             }
 

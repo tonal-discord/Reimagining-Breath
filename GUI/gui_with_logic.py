@@ -225,7 +225,8 @@ class GUI:
 
         # init shared memory
         shm_a = shared_memory.SharedMemory(name="ReimaginingBreath", size=10)
-        # TODO error handle this
+        # TODO error handle this - just freezes on loading screen if can't open.
+        # happens if RVM isn't running and magnifying before a video is selected.
         slopelist = []
         prevValue = 0
         prevBreathValue = 0
@@ -238,6 +239,7 @@ class GUI:
              
             # Reads in byte array, convert that to integer using little endian.
             breathValue = int.from_bytes(bytes(shm_a.buf[:10]), 'little')
+            # Only change speed if breathValue has changed
             if breathValue != prevBreathValue:
                 print("Breath value: ", breathValue, "prev: ", prevValue)
                 slopelist.append(breathValue-prevValue)
