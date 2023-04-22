@@ -123,6 +123,7 @@ void ProcessingThread::run()
     // end shared memory init
     int prevFrameNum = 0;
     int breathValues[3];
+    float prevSumm;
     while(1)
     {
         ////////////////////////// ///////
@@ -251,18 +252,41 @@ void ProcessingThread::run()
 
         temp = magnificator.breathMeasureOutput;
 
-        breathValues[frameNum - prevFrameNum] = temp;
+        // this doesn't do anything (all of these ifs.) Delete them.
+        cout << "put: " << frameNum-1 - prevFrameNum << endl;
+        breathValues[frameNum-1 - prevFrameNum] = temp;
         if (frameNum - prevFrameNum == 3) {
-            int summ = 0;
+            cout << frameNum << " " << prevFrameNum << endl;
+
+            float summ = 0;
             for (int i = 0; i < 3; i++) {
                 summ += breathValues[i];
             }
             summ /= 3;
+            cout << "summ: " << breathValues[0] << " " << breathValues[1] << " " << breathValues [2] << " = " <<  summ << endl;
+
+            // for first one, initialize prevSumm.
+            if (frameNum == 3) {
+                prevSumm = summ;
+            }
+
+            float slope = (breathValues[2] - breathValues[0])/3;
+
+            // if massive jump, make slope +/-25.
+            if ((summ - prevSumm)/2 > 25) {
+                cout << "one" << endl;
+                summ = prevSumm + 50;
+            }
+            else if ((summ - prevSumm)/2 < -25) {
+                cout << "two" << endl;
+                summ = prevSumm - 50;
+            }
+
 
             temp = summ;
-            prevFrameNum = frameNum;
-            CopyMemory((PVOID)pBuf, point2, sizeof(int));
 
+
+            CopyMemory((PVOID)pBuf, point2, sizeof(int));
 
             QFile file("out.csv");
             if (file.open(QIODevice::WriteOnly | QIODevice::Append)) {
@@ -277,7 +301,11 @@ void ProcessingThread::run()
 
                 file.close();
             }
+
+            prevFrameNum = frameNum;
+            prevSumm = summ;
         }
+
 
         // _getch();
     }
