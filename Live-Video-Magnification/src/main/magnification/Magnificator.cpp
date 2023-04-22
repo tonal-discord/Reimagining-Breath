@@ -39,7 +39,7 @@ Magnificator::Magnificator(std::vector<cv::Mat> *pBuffer,
     processingBuffer(pBuffer),
     imgProcFlags(imageProcFlags),
     imgProcSettings(imageProcSettings),
-    numFrames(numFrames),
+    numFrames(numFrames), // TODO might not need this, have CSV in processing.
     currentFrame(0)
     {
         // Default magnification settings
@@ -559,21 +559,7 @@ void Magnificator::laplaceMagnify() {
             // write avg contours file to csv
 //            cout << "FRAMES: w" << * *numFrames << endl;
 
-            int temporary = *numFrames;
 
-            QFile file("out.csv");
-            if (file.open(QIODevice::WriteOnly | QIODevice::Append)) {
-                if(!file.isOpen())
-                {
-                    //alert that file did not open
-                    cout << "Couldn't open file";
-                }
-
-                QTextStream outStream(&file);
-                outStream << *numFrames << "," << contoursSum << "\n";
-
-                file.close();
-            }
 
 
             // set initial prevavgcontourssum if first frame.

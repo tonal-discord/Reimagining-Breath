@@ -120,6 +120,7 @@ void PlayerThread::run()
     /// Stop thread if doStop=TRUE /////
     ///////////////////////////////////
     int prevFrameNum = 0;
+    int breathValues[3];
     while(!doStop)
     {
         //////////////////////////////////////////////
@@ -235,19 +236,42 @@ void PlayerThread::run()
 
         temp = magnificator.breathMeasureOutput;
 
-        if (frameNum == prevFrameNum + 30) {
-            CopyMemory((PVOID)pBuf, point2, sizeof(int));
+        breathValues[frameNum - prevFrameNum] = temp;
+        if (frameNum - prevFrameNum == 3) {
+            int summ = 0;
+            for (int i = 0; i < 3; i++) {
+                summ += breathValues[i];
+            }
+            summ /= 3;
+
+            temp = summ;
+
             prevFrameNum = frameNum;
+            CopyMemory((PVOID)pBuf, point2, sizeof(int));
+
+            QFile file("out.csv");
+            if (file.open(QIODevice::WriteOnly | QIODevice::Append)) {
+                if(!file.isOpen())
+                {
+                    //alert that file did not open
+                    cout << "Couldn't open file";
+                }
+
+                QTextStream outStream(&file);
+                outStream << frameNum << "," << summ << "\n";
+
+                file.close();
+            }
         }
 
 
-//        cv::putText(currentFrame, //target image
-//                    "FRAMENUM " + std::to_string(frameNum) , //text
-//                    cv::Point(10, currentFrame.rows / 4), //top-left position
-//                    cv::FONT_HERSHEY_DUPLEX,
-//                    1.0,
-//                    CV_RGB(118, 185, 0), //font color
-//                    2);
+        cv::putText(currentFrame, //target image
+                    "FRAME " + std::to_string(frameNum) , //text
+                    cv::Point(10, currentFrame.rows / 4), //top-left position
+                    cv::FONT_HERSHEY_DUPLEX,
+                    1.0,
+                    CV_RGB(118, 185, 0), //font color
+                    2);
         frame = MatToQImage(currentFrame);
         if(emitOriginal) {
             originalFrame = MatToQImage(originalBuffer.front());

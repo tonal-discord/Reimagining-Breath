@@ -122,6 +122,7 @@ void ProcessingThread::run()
     }
     // end shared memory init
     int prevFrameNum = 0;
+    int breathValues[3];
     while(1)
     {
         ////////////////////////// ///////
@@ -199,7 +200,6 @@ void ProcessingThread::run()
         //       std::string txt;
         //       txt = "EXHALE. " + std::to_string(contoursSum) ;
 
-        cout << std::to_string(frameNum) << endl;
         cv::putText(currentFrame, //target image
                     "FRAME " + std::to_string(frameNum) + ", " + std::to_string(prevFrameNum), //text
                     cv::Point(10, currentFrame.rows / 4), //top-left position
@@ -251,9 +251,32 @@ void ProcessingThread::run()
 
         temp = magnificator.breathMeasureOutput;
 
-        if (frameNum == prevFrameNum + 30) {
-            CopyMemory((PVOID)pBuf, point2, sizeof(int));
+        breathValues[frameNum - prevFrameNum] = temp;
+        if (frameNum - prevFrameNum == 3) {
+            int summ = 0;
+            for (int i = 0; i < 3; i++) {
+                summ += breathValues[i];
+            }
+            summ /= 3;
+
+            temp = summ;
             prevFrameNum = frameNum;
+            CopyMemory((PVOID)pBuf, point2, sizeof(int));
+
+
+            QFile file("out.csv");
+            if (file.open(QIODevice::WriteOnly | QIODevice::Append)) {
+                if(!file.isOpen())
+                {
+                    //alert that file did not open
+                    cout << "Couldn't open file";
+                }
+
+                QTextStream outStream(&file);
+                outStream << frameNum << "," << summ << "\n";
+
+                file.close();
+            }
         }
 
         // _getch();
