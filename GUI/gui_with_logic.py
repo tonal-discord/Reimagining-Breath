@@ -233,25 +233,29 @@ class GUI:
         slope = 0
         i = 0
         updateframe = 0
-        updatetime = 2
+        updatetime = 3
         msperframe = int((1000//framerate)//self.playrate)
         while (self.videoPlaying):
              
             # Reads in byte array, convert that to integer using little endian.
             breathValue = int.from_bytes(bytes(shm_a.buf[:10]), 'little')
             # Only change speed if breathValue has changed
+            # TODO when this is false, uses a ton of resources. FIx that? Limit shared mem reading rate would be good.
             if breathValue != prevBreathValue:
+
+
                 print("Breath value: ", breathValue, "prev: ", prevValue)
                 slopelist.append(breathValue-prevValue)
-                if len(slopelist) >=6:
+                if len(slopelist) > 6:
                     slopelist.pop(0)
                 for value in slopelist:
                     i += 1
                     slope += value  
-                if i < 6:
-                    slope = slope/i
-                else:
-                    slope = slope/6
+                # if i < :
+                slope = slope/i
+                # else:
+                    # slope = slope/6
+                i = 0
                 if updateframe == updatetime:
 
                     breathValue = int(breathValue)

@@ -600,21 +600,22 @@ void Magnificator::laplaceMagnify() {
                 // https://www.geeksforgeeks.org/closest-pair-of-points-using-divide-and-conquer-algorithm/
                 // avg x and y of this contour
                 ySum /= pont.size();
-                xSum /= pont.size();
+//                xSum /= pont.size();
 
                 // Add the par of avg x and y points to a vector
-                avgCoords.push_back(std::pair<int, int>(xSum, ySum));
+//                avgCoords.push_back(std::pair<int, int>(xSum, ySum));
 
                 contoursSum += ySum;
             }
 
-            if (avgCoords.size() > 0) {
-                // accessing coord pairs of avgCoords
-//                cout << "It IS: " << std::to_string(avgCoords.at(0).first) << endl;
-            }
+//            if (avgCoords.size() > 0) {
+//                // accessing coord pairs of avgCoords
+////                cout << "It IS: " << std::to_string(avgCoords.at(0).first) << endl;
+//            }
 
             // if only 15 contours, likely not breathing.
-            if (numContours <= 15) {
+            // change from 15 to 7
+            if (numContours <= 7) {
                 contoursSum = 0;
             } else {
                 contoursSum = contoursSum / std::min(numContours, desiredLongest);
