@@ -104,7 +104,7 @@ class GUI:
         self.videoPlaying = False
 
         # Video playback logic variables
-        self.playrate = .5
+        self.playrate = 0.8
         self.reverse = False
 
         # Drawing & preprocessing
@@ -346,25 +346,47 @@ class GUI:
             # Only change speed if breathValue has changed
             # TODO when this is false, uses a ton of resources. FIx that? Limit shared mem reading rate would be good.
             if breathValue != prevBreathValue:
-                print("Breath value: ", breathValue, "prev: ", prevValue)
-                print("Append: ", abs(breathValue-prevValue)/updatetime)
+                # print("Breath value: ", breathValue, "prev: ", prevValue)
 
                 if len(self.slopelist) >= 5:
                     alist = self.peaks.thresholding_algo(breathValue)
+                    
+                    # for value in alist:
+                    print(alist)
+                    # print("Alist: ", alist)
+                    
+                    # print("")
 
 
           
-                self.slopelist.append(abs(breathValue-prevValue)/updatetime)
+                self.slopelist.append(breathValue-prevValue)
 
-                if len(slopelist) > 6:
-                    slopelist.pop(0)
+                # if len(self.slopelist) >= 10:
+                #     # Run algo with settings from above
+                #     result = self.thresholding_algo(self.slopelist, lag=5, threshold=5, influence=1)
 
+                #     pylab.subplot(211)
+                #     pylab.plot(np.arange(1, len(y)+1), y)
 
+                #     pylab.plot(np.arange(1, len(y)+1),
+                #             result["avgFilter"], color="cyan", lw=2)
 
-               
+                #     pylab.plot(np.arange(1, len(y)+1),
+                #             result["avgFilter"] + threshold * result["stdFilter"], color="green", lw=2)
+
+                #     pylab.plot(np.arange(1, len(y)+1),
+                #             result["avgFilter"] - threshold * result["stdFilter"], color="green", lw=2)
+
+                #     pylab.subplot(212)
+                #     pylab.step(np.arange(1, len(y)+1), result["signals"], color="red", lw=2)
+                #     pylab.ylim(-1.5, 1.5)
+                #     pylab.show()
+
+                # if len(slopelist) > 6:
+                #     slopelist.pop(0)
                 for value in self.slopelist:
                     i += 1
-                    slope += float(value)
+                    slope += value  
                 # if i < :
                 slope = slope/i
                 # else:
@@ -372,13 +394,9 @@ class GUI:
                 i = 0
                 # if updateframe == updatetime:
 
-                # breathValue = int(breathValue)
-
-                print(str(slope))
-
-
-                self.playrate = (abs((slope - 0))/(10-0))*(5-.05)+.05
-                
+                breathValue = int(breathValue)
+                #self.playrate = (abs((slope - -10))/(10--10))*(1-.05)+.05
+                # print(str((breathValue-prevValue)/updatetime))
                 if alist>0:
                     self.reverse = True
                 elif (alist)<0:
@@ -386,11 +404,9 @@ class GUI:
                 
             
                     
-                if updateframe == 24:   
-                    msperframe = int((1000//framerate)//self.playrate)
-                    updateframe = 0
-
-                
+                    
+                    #msperframe = int((1000//framerate)//self.playrate)
+                    # updateframe = 0
                 prevValue = breathValue
             
                 self.video_screen.config(text='', image=frames[frame])
