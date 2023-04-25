@@ -123,7 +123,6 @@ void PlayerThread::run()
     /// Stop thread if doStop=TRUE /////
     ///////////////////////////////////
     int prevFrameNum = 0;
-    int breathValues[3];
     float prevSumm;
     while(!doStop)
     {

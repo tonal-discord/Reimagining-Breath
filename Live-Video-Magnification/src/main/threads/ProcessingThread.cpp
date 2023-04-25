@@ -211,6 +211,7 @@ void ProcessingThread::run()
                     2);
 
 
+
         // Convert cv::Mat to QImage
         frame=MatToQImage(currentFrame);
 
