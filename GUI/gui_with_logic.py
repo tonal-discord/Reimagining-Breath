@@ -77,7 +77,7 @@ class GUI:
         # class real_time_peak_detection():
     # def __init__(self, array, lag, threshold, influence):
         self.slopelist = [0, 0, 0, 0, 0, 0, 0, 0, 0]
-        self.peaks = real_time_peak_detection(self.slopelist,5,2,1)
+        self.peaks = real_time_peak_detection(self.slopelist,lag=5,threshold=2,influence=1)
         self.rows = rows if rows <= self.max_rows else self.max_rows
         self.cols = cols if cols <= self.max_cols else self.max_cols
 
@@ -335,9 +335,6 @@ class GUI:
         i = 0
         updateframe = 0
         updatetime = 3
-        lag = 5
-        threshold = 5
-        influence = 0
         msperframe = int((1000//framerate)//self.playrate)
         self.window.update()
 

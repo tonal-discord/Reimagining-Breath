@@ -372,7 +372,7 @@ void Magnificator::laplaceMagnify() {
     levels = imgProcSettings->levels;
 //    cout << "LEVELS: " + std::to_string(levels);
 
-    cv::Mat input, output, motion, hsvimg, labimg, newestMotion, preparedFrame, firstContours;
+    cv::Mat input, output, motion, hsvimg, labimg, newestMotion, preparedFrame, firstContours, temp;
     vector<cv::Mat> inputPyramid;
     int pChannels;
 
@@ -465,13 +465,15 @@ void Magnificator::laplaceMagnify() {
 
         /* 6. ADD MOTION TO ORIGINAL IMAGE */
         if(currentFrame > 0) {
-//            output = input+motion; // used in original
-
-             output = motion;
+            output = input+motion; // used in original
+            temp = motion;
+//             output = motion;
 //            output = hsvimg;
         }
-        else
+        else {
             output = input;
+            temp = input;
+        }
 
         // Scale output image an convert back to 8bit unsigned
         if(!(imgProcFlags->grayscaleOn || pChannels <= 2)) {
@@ -483,6 +485,15 @@ void Magnificator::laplaceMagnify() {
             output.convertTo(output, CV_8UC1, 255.0, 1.0/255.0);
         }
 
+        if(!(imgProcFlags->grayscaleOn || pChannels <= 2)) {
+            // Convert YCrCb image back to BGR
+            cvtColor(temp, temp, cv::COLOR_YCrCb2BGR);
+            temp.convertTo(temp, CV_8UC3, 255.0, 1.0/255.0);
+        }
+        else {
+            temp.convertTo(temp, CV_8UC1, 255.0, 1.0/255.0);
+        }
+
 //        cv::imshow("First", output);
 
         // detect motion between input and prevFrame. on 2nd+ frame. Then set prevFrame to input.
@@ -490,7 +501,9 @@ void Magnificator::laplaceMagnify() {
         // Make this < 0 and edit above currentFrame >0 to original if want to just see original.
         if (currentFrame > 0) {
 
-            newestMotion = output;
+//            newestMotion = output;
+            newestMotion = temp;
+
 
 
             // convert prevFrame
@@ -499,7 +512,7 @@ void Magnificator::laplaceMagnify() {
             prevFrame.convertTo(prevFrame, CV_8UC1, 255.0, 1.0/255.0);
 
             // convert newestMotion as a gray of output
-            cvtColor(output, newestMotion, cv::COLOR_BGR2GRAY);
+            cvtColor(temp, newestMotion, cv::COLOR_BGR2GRAY);
             cv::GaussianBlur(newestMotion, newestMotion, cv::Size(5,5), 0, 0);
 
             preparedFrame = prevFrame;
@@ -522,9 +535,10 @@ void Magnificator::laplaceMagnify() {
             bitwise_not(threshFrame, threshFrame); // invert image so foreground is white, background is black. (contours detct white on black)
 
             // threshold frame honestly looks pretty good, if can find countours in that then do area from the tutorial, etc.
-            output = threshFrame; // Set the output to threshold frame.
+            temp = threshFrame; // Set the output to threshold frame.
 
-            cvtColor(output, output, cv::COLOR_GRAY2BGR);
+
+            cvtColor(temp, temp, cv::COLOR_GRAY2BGR);
 //            cv::imshow("BGR", output); // here it's white and black, looks pretty decent.
 
 
@@ -567,16 +581,17 @@ void Magnificator::laplaceMagnify() {
 
             // TODO: try cv::medianBlur maybe to decrease noise
 
-            output = finalFrame; // this is the frame after contours have been added.
+//            output = finalFrame; // this is the frame after contours have been added.
 
             // save the very first contours frame
             if (first) {
-                firstContours = output;
+                firstContours = temp;
             } else {
-                output = finalFrame - firstContours;
+                temp = finalFrame - firstContours;
             }
 
 
+//            output = motion;
             // Iterate through up to the desiredLongest largest contours.
             int contoursSum = 0;
             std::vector<std::pair<int, int>> avgCoords;

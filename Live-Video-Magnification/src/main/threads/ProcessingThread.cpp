@@ -202,13 +202,13 @@ void ProcessingThread::run()
         //       std::string txt;
         //       txt = "EXHALE. " + std::to_string(contoursSum) ;
 
-        cv::putText(currentFrame, //target image
-                    "FRAME " + std::to_string(frameNum) + ", " + std::to_string(prevFrameNum), //text
-                    cv::Point(10, currentFrame.rows / 4), //top-left position
-                    cv::FONT_HERSHEY_DUPLEX,
-                    1.0,
-                    CV_RGB(118, 185, 0), //font color
-                    2);
+//        cv::putText(currentFrame, //target image
+//                    "FRAME " + std::to_string(frameNum) + ", " + std::to_string(prevFrameNum), //text
+//                    cv::Point(10, currentFrame.rows / 4), //top-left position
+//                    cv::FONT_HERSHEY_DUPLEX,
+//                    1.0,
+//                    CV_RGB(118, 185, 0), //font color
+//                    2);
 
 
 
