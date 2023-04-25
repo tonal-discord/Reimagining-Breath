@@ -1,4 +1,4 @@
-
+import time
 import os
 import sys
 import cv2
@@ -30,7 +30,7 @@ class GUI:
         self.screen_width = self.window.winfo_screenwidth()
         self.screen_height = self.window.winfo_screenheight()
 
-        # Initialize joystick (right joycon only)
+        # Initialize joystick (right joycon only) COMMENT
         # self.joystick = joycon.JoyCon(pyjoycon.get_R_id())
 
         self.thumbnails = {}
@@ -52,7 +52,7 @@ class GUI:
         # Load page number 1
         self.loadSelectionScreen(1)
 
-        # Start reading joystick
+        # Start reading joystick COMMENT
         # self.window.after(1, self.readJoystick)
 
         # Run the GUI window
@@ -62,7 +62,7 @@ class GUI:
     def readJoystick(self): 
         prev_btn_state, next_btn_state, exit_btn_state = self.joystick.read()
         
-        # Snap mouse to exit button if video playing
+        # Snap mouse to exit button if video playing COMMENT
         if self.videoPlaying :
             mouse.move(self.navi_btn_frame.winfo_rootx() + self.navi_btn_frame.winfo_width()/2 + 30, 
                        self.navi_btn_frame.winfo_rooty() + self.navi_btn_frame.winfo_height() + 20)
@@ -189,6 +189,7 @@ class GUI:
         
         global cap
         cap = cv2.VideoCapture(f"./videos/{filePath}")
+        filename = filePath.split(".")[0]
 
         # Show video playback tkinter frame
         self.video_screen.grid(column=0, row=0, columnspan=self.cols, rowspan=self.rows, sticky="news")
@@ -197,7 +198,7 @@ class GUI:
         self.btn_exit.configure(command= lambda: self.closeVideo())
 
         # Show video loading screen
-        self.video_screen.config(text="Just a moment...", fg="white", bg="black", height=self.screen_height, width=self.screen_width, image='', font="none 16 bold")
+        self.video_screen.config(text="Just a moment...", fg="white", bg="black", compound="bottom", image=self.thumbnails[f"{filename}"], height=self.screen_height, width=self.screen_width, font="none 16 bold")
         self.window.update()
 
         framecount = 0
@@ -224,9 +225,16 @@ class GUI:
         revframes = frames.reverse()
 
         # init shared memory
-        shm_a = shared_memory.SharedMemory(name="ReimaginingBreath", size=10)
-        # TODO error handle this - just freezes on loading screen if can't open.
-        # happens if RVM isn't running and magnifying before a video is selected.
+        # Try except made it stuck on loading screen sometimes, not sure why.
+        while 1:
+            self.window.update() 
+            try:
+                shm_a = shared_memory.SharedMemory(name="ReimaginingBreath", size=10)
+                break
+            except:
+                print("trying again")
+                time.sleep(1)
+        
         slopelist = []
         prevValue = 0
         prevBreathValue = 0
@@ -235,6 +243,7 @@ class GUI:
         updateframe = 0
         updatetime = 3
         msperframe = int((1000//framerate)//self.playrate)
+        self.window.update()
         while (self.videoPlaying):
              
             # Reads in byte array, convert that to integer using little endian.
@@ -271,9 +280,9 @@ class GUI:
                     msperframe = int((1000//framerate)//self.playrate)
                     updateframe = 0
                     prevValue = breathValue
-                
-                self.video_screen.config(text='', image=frames[frame])
             
+                self.video_screen.config(text='', image=frames[frame])
+                
                 if self.reverse:
                     frame-=1
                     if (abs(frame) > framecount-2) and (frame < 0):
@@ -293,7 +302,7 @@ class GUI:
                 #prevValue = breathValue
                 prevBreathValue = breathValue
                 updateframe +=1
-                self.window.update() 
+            self.window.update() 
             
         self.closeVideo()
         # Close shared mem

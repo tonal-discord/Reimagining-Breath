@@ -255,7 +255,6 @@ void PlayerThread::run()
             }
             summ /= 3;
 
-
             // for first one, initialize prevSumm.
             if (frameNum == 3) {
                 prevSumm = summ;
@@ -264,13 +263,14 @@ void PlayerThread::run()
             float slope = (breathValues[2] - breathValues[0])/3;
 
             // if massive jump, make slope +/-25.
-            if ((summ - prevSumm)/2 > 25) {
-                summ = prevSumm + 50;
+            if (prevSumm != 0) {
+                if ((summ - prevSumm)/2 > 25) {
+                    summ = prevSumm + 50;
+                }
+                else if ((summ - prevSumm)/2 < -25) {
+                    summ = prevSumm - 50;
+                }
             }
-            else if ((summ - prevSumm)/2 < -25) {
-                summ = prevSumm - 50;
-            }
-
 
             temp = summ;
 
