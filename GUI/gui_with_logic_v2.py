@@ -86,8 +86,8 @@ class GUI:
 
         self.window = Tk()
         self.window.title("Re-Imagining Breath Video Player GUI")
-        # self.window.attributes('-fullscreen',True)
-        self.window.geometry("800x800")
+        self.window.attributes('-fullscreen',True)
+        # self.window.geometry("800x800")
         self.window.configure(bg="black", cursor="@cursor_20t.cur") # changing system cursor size to 9 is about good
         self.window.columnconfigure(0, weight=1)
         self.window.rowconfigure(1, weight=1)
