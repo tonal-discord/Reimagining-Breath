@@ -1,7 +1,7 @@
 import time
 import os
-import sys
 import cv2
+import argparse
 import pylab # pip install pylab-sdk requests
 import pyjoycon, joycon, mouse
 from tkinter import *
@@ -73,9 +73,7 @@ class GUI:
     max_rows = 10
     max_cols = 10
 
-    def __init__(self, rows=3, cols=3):
-        # class real_time_peak_detection():
-    # def __init__(self, array, lag, threshold, influence):
+    def __init__(self, rows=3, cols=3, use_joystick=0):
         self.slopelist = [0, 0, 0, 0, 0, 0, 0, 0, 0]
         self.peaks = real_time_peak_detection(self.slopelist,lag=5,threshold=2,influence=1)
         self.rows = rows if rows <= self.max_rows else self.max_rows
@@ -95,8 +93,8 @@ class GUI:
         self.screen_width = self.window.winfo_screenwidth()
         self.screen_height = self.window.winfo_screenheight()
 
-        # Initialize joystick (right joycon only) COMMENT
-        self.joystick = joycon.JoyCon(pyjoycon.get_R_id())
+        # Initialize joystick (right joycon only)
+        self.joystick = joycon.JoyCon(pyjoycon.get_R_id()) if use_joystick != 0 else None
 
         self.thumbnails = {}
         self.pages = {}
@@ -117,7 +115,7 @@ class GUI:
         # Load page number 1
         self.loadSelectionScreen(1)
 
-        # Start reading joystick COMMENT
+        # Start reading joystick
         self.window.after(1, self.readJoystick)
 
         # Run the GUI window
@@ -125,21 +123,22 @@ class GUI:
 
 
     def readJoystick(self): 
-        prev_btn_state, next_btn_state, exit_btn_state = self.joystick.read()
-        
-        # Snap mouse to exit button if video playing COMMENT
-        if self.videoPlaying :
-            mouse.move(self.navi_btn_frame.winfo_rootx() + self.navi_btn_frame.winfo_width()/2 + 30, 
-                       self.navi_btn_frame.winfo_rooty() + self.navi_btn_frame.winfo_height() + 20)
+        if self.joystick != None:
+            prev_btn_state, next_btn_state, exit_btn_state = self.joystick.read()
             
-            if exit_btn_state == 1 :
-                self.closeVideo()
-            
-        else :
-            if next_btn_state == 1 :
-                self.loadSelectionScreen(self.cur_page+1)
-            elif prev_btn_state == 1 :
-                self.loadSelectionScreen(self.cur_page-1)
+            # Snap mouse to exit button if video playing
+            if self.videoPlaying :
+                mouse.move(self.navi_btn_frame.winfo_rootx() + self.navi_btn_frame.winfo_width()/2 + 30, 
+                        self.navi_btn_frame.winfo_rooty() + self.navi_btn_frame.winfo_height() + 20)
+                
+                if exit_btn_state == 1 :
+                    self.closeVideo()
+                
+            else :
+                if next_btn_state == 1 :
+                    self.loadSelectionScreen(self.cur_page+1)
+                elif prev_btn_state == 1 :
+                    self.loadSelectionScreen(self.cur_page-1)
 
         self.window.after(1, self.readJoystick)
 
@@ -157,10 +156,11 @@ class GUI:
         self.navi_btn_frame.grid(row=2, column=0, columnspan=self.cols, sticky="news", pady=(0,5))
         self.btn_next_page = Button(self.navi_btn_frame, text='Next Page', bg="black", fg = "white")
         self.btn_prev_page = Button(self.navi_btn_frame, text='Previous Page', bg="black", fg = "white")
+        self.btn_joystick = Button(self.navi_btn_frame, text='Enable Joystick', bg="black", fg = "white")  # joystick enable/disable
         
         # Video display and exit button
         self.video_screen = Label(self.window)  
-        self.btn_exit = Button(self.window, text='Exit', bg="black", fg = "white")    
+        self.btn_exit = Button(self.window, text='Exit', bg="black", fg = "white")     
 
 
     def populateThumbnail(self):
@@ -247,33 +247,7 @@ class GUI:
         
         # Update the window
         self.window.update()
-        
-    # def thresholding_algo(y, lag, threshold, influence):
-    #     signals = np.zeros(len(y))
-    #     filteredY = np.array(y)
-    #     avgFilter = [0]*len(y)
-    #     stdFilter = [0]*len(y)
-    #     avgFilter[lag - 1] = np.mean(y[0:lag])
-    #     stdFilter[lag - 1] = np.std(y[0:lag])
-    #     for i in range(lag, len(y)):
-    #         if abs(y[i] - avgFilter[i-1]) > threshold * stdFilter [i-1]:
-    #             if y[i] > avgFilter[i-1]:
-    #                 signals[i] = 1
-    #             else:
-    #                 signals[i] = -1
 
-    #             filteredY[i] = influence * y[i] + (1 - influence) * filteredY[i-1]
-    #             avgFilter[i] = np.mean(filteredY[(i-lag+1):i+1])
-    #             stdFilter[i] = np.std(filteredY[(i-lag+1):i+1])
-    #         else:
-    #             signals[i] = 0
-    #             filteredY[i] = y[i]
-    #             avgFilter[i] = np.mean(filteredY[(i-lag+1):i+1])
-    #             stdFilter[i] = np.std(filteredY[(i-lag+1):i+1])
-
-    #     return dict(signals = np.asarray(signals),
-    #                 avgFilter = np.asarray(avgFilter),
-    #                 stdFilter = np.asarray(stdFilter))
     
     def Play(self, filePath, framerate, mirror=False) :
         self.videoPlaying = True
@@ -316,19 +290,28 @@ class GUI:
         revframes = frames.reverse()
 
         # init shared memory
-        # Try except made it stuck on loading screen sometimes, not sure why.
+        i = 0
         while 1:
+            i += 1
             self.window.update() 
             try:
                 shm_a = shared_memory.SharedMemory(name="ReimaginingBreath", size=10)
                 break
             except:
-                print("trying again")
+                print("Could not open shared memory, trying again.")
+
+                # if still not open after 10 seconds, display error msg and close video.
+                if i == 10:
+                    i = 0
+                    top= Toplevel(self.window)
+                    top.geometry("400x100")
+                    top.title("Error")
+                    Label(top, text="Could not open shared memory. Is realtime video magnification running?", fg="black").place(relx=0.5, rely=0.5, anchor=CENTER)
+                    self.closeVideo()
+                    break
                 time.sleep(1)
-        
-        
+
         slopelist = []
-      
         prevValue = 0
         prevBreathValue = 0
         slope = 0
@@ -339,74 +322,32 @@ class GUI:
         self.window.update()
 
         while (self.videoPlaying):
-         
-
-            # Reads in byte array, convert that to integer using little endian.
+            # Reads in byte array from shared mem, convert that to integer using little endian.
             breathValue = int.from_bytes(bytes(shm_a.buf[:10]), 'little')
             # Only change speed if breathValue has changed
-            # TODO when this is false, uses a ton of resources. FIx that? Limit shared mem reading rate would be good.
             if breathValue != prevBreathValue:
-                # print("Breath value: ", breathValue, "prev: ", prevValue)
+                print("Breath value: ", breathValue, "prev: ", prevValue)
 
                 if len(self.slopelist) >= 5:
                     alist = self.peaks.thresholding_algo(breathValue)
-                    
-                    # for value in alist:
-                    print(alist)
-                    # print("Alist: ", alist)
-                    
-                    # print("")
-
-
+                    # print(alist)
           
                 self.slopelist.append(breathValue-prevValue)
 
-                # if len(self.slopelist) >= 10:
-                #     # Run algo with settings from above
-                #     result = self.thresholding_algo(self.slopelist, lag=5, threshold=5, influence=1)
-
-                #     pylab.subplot(211)
-                #     pylab.plot(np.arange(1, len(y)+1), y)
-
-                #     pylab.plot(np.arange(1, len(y)+1),
-                #             result["avgFilter"], color="cyan", lw=2)
-
-                #     pylab.plot(np.arange(1, len(y)+1),
-                #             result["avgFilter"] + threshold * result["stdFilter"], color="green", lw=2)
-
-                #     pylab.plot(np.arange(1, len(y)+1),
-                #             result["avgFilter"] - threshold * result["stdFilter"], color="green", lw=2)
-
-                #     pylab.subplot(212)
-                #     pylab.step(np.arange(1, len(y)+1), result["signals"], color="red", lw=2)
-                #     pylab.ylim(-1.5, 1.5)
-                #     pylab.show()
-
-                # if len(slopelist) > 6:
-                #     slopelist.pop(0)
                 for value in self.slopelist:
                     i += 1
                     slope += value  
-                # if i < :
+                
                 slope = slope/i
-                # else:
-                    # slope = slope/6
+                
                 i = 0
-                # if updateframe == updatetime:
-
                 breathValue = int(breathValue)
-                #self.playrate = (abs((slope - -10))/(10--10))*(1-.05)+.05
-                # print(str((breathValue-prevValue)/updatetime))
+
                 if alist>0:
                     self.reverse = True
                 elif (alist)<0:
                     self.reverse = False
-                
-            
-                    
-                    
-                    #msperframe = int((1000//framerate)//self.playrate)
-                    # updateframe = 0
+          
                 prevValue = breathValue
             
                 self.video_screen.config(text='', image=frames[frame])
@@ -430,6 +371,9 @@ class GUI:
                 #prevValue = breathValue
                 prevBreathValue = breathValue
                 updateframe +=1
+            else:
+                # sleep if it's not changing to limit resource usage.
+                time.sleep(0.01)
             self.window.update() 
             
         self.closeVideo()
@@ -454,29 +398,50 @@ class GUI:
 
         self.btn_next_page.configure(command=lambda p=self.cur_page+1: self.loadSelectionScreen(p))
         self.btn_prev_page.configure(command=lambda p=self.cur_page-1: self.loadSelectionScreen(p))
+        self.btn_joystick.configure(command=self.toggleJoystick)
         
         # Show navigation button(s) based on current page
         self.btn_next_page.grid_configure(row=0, column=(0 if self.cur_page == 1 else 1), pady=(10,0), columnspan=1, sticky="news")
         self.btn_prev_page.grid_configure(row=0, column=0, pady=(10,0), padx=(0,10), columnspan=1, sticky="news")
+        self.btn_joystick.grid_configure(row=0, column=(2), sticky="news", padx=(10, 0), pady=(10,0))
 
         if self.cur_page == 1:    # first page
             self.btn_prev_page.grid_forget()
-            self.btn_next_page.grid(columnspan=self.cols)
+            self.btn_next_page.grid(columnspan=2)
         elif self.cur_page == num_pages:  #last page
             self.btn_next_page.grid_forget()
-            self.btn_prev_page.grid(columnspan=self.cols, padx=0)
+            self.btn_prev_page.grid(columnspan=2, padx=0)
         else:
             self.navi_btn_frame.columnconfigure(1, weight=1)
 
         self.navi_btn_frame.columnconfigure(0, weight=1)
 
 
-if __name__ == "__main__":
-    global gui
+    def toggleJoystick(self) :
+        if self.joystick == None :
+            try :
+                self.joystick = joycon.JoyCon(pyjoycon.get_R_id())
+                self.btn_joystick.config(text="Disable Joystick")
+            except:
+                # Show error dialog box if joycon not connected to bluetooth or not found
+                print("No controller found.")
+                top= Toplevel(self.window)
+                top.geometry("200x100")
+                top.title("Error")
+                Label(top, text="No controller found.", fg="black").place(relx=0.5, rely=0.5, anchor=CENTER)
 
-    if len(sys.argv) > 2 and sys.argv[1].isdigit() and sys.argv[2].isdigit():
-        gui = GUI(int(sys.argv[1]), int(sys.argv[2])) 
-    else:
-        gui = GUI()
-    
+        else :
+            self.joystick = None
+            self.btn_joystick.config(text="Enable Joystick")
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--r', '--rows', default=3, type=int)
+    parser.add_argument('--c', '--cols', '--columns', default=3, type=int)
+    parser.add_argument('--use_joystick', default=0, type=int)
+
+    args = parser.parse_args()
+    gui = GUI(args.r, args.c, args.use_joystick)
+
     gui.run()
