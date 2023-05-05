@@ -88,14 +88,25 @@ bool CaptureThread::connectToCamera()
 {
     // Open camera
     bool camOpenResult = cap.open(deviceNumber);
-    // Set resolution
+    // Set resolution.
+    // -1 means the user didn't specif resolution.
+    // If that is the case, set default to 1280x720.
+    // OpenCV's default is 640x480.
     if(width != -1)
         cap.set(cv::CAP_PROP_FRAME_WIDTH, width);
+    else {
+        cap.set(cv::CAP_PROP_FRAME_WIDTH, 1280);
+    }
+
     if(height != -1)
         cap.set(cv::CAP_PROP_FRAME_HEIGHT, height);
+    else {
+        cap.set(cv::CAP_PROP_FRAME_HEIGHT, 720);
+    }
     // Set maximum frames per second
     if(fpsGoal != -1)
         cap.set(cv::CAP_PROP_FPS, fpsGoal);
+
     // Return result
     return camOpenResult;
 }

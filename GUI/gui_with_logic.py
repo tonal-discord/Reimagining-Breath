@@ -96,7 +96,7 @@ class GUI:
         self.screen_height = self.window.winfo_screenheight()
 
         # Initialize joystick (right joycon only) COMMENT
-        # self.joystick = joycon.JoyCon(pyjoycon.get_R_id())
+        self.joystick = joycon.JoyCon(pyjoycon.get_R_id())
 
         self.thumbnails = {}
         self.pages = {}
@@ -118,7 +118,7 @@ class GUI:
         self.loadSelectionScreen(1)
 
         # Start reading joystick COMMENT
-        # self.window.after(1, self.readJoystick)
+        self.window.after(1, self.readJoystick)
 
         # Run the GUI window
         self.window.mainloop()

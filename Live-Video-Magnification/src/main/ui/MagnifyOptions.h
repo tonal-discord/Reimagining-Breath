@@ -57,6 +57,7 @@ private:
 public slots:
     void setMaxLevel(int level);
     void reset();
+    void toggleMagnifiedOrContours();
 
 private slots:
     void updateFlagsFromOptionsTab();

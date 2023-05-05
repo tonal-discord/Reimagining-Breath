@@ -93,8 +93,8 @@ void ProcessingThread::run()
     point2 = &temp;
 
 
+    // shared memory init
     TCHAR szName[]=TEXT("ReimaginingBreath");
-//    TCHAR szMsg[]=TEXT("YOssage from first process.");
 
 
     hMapFile = CreateFileMapping(
@@ -290,18 +290,20 @@ void ProcessingThread::run()
 
             CopyMemory((PVOID)pBuf, point2, sizeof(int));
 
-            QFile file("out.csv");
-            if (file.open(QIODevice::WriteOnly | QIODevice::Append)) {
-                if(!file.isOpen())
-                {
-                    //alert that file did not open
-                    cout << "Couldn't open file";
+            if (imgProcSettings.CSV) {
+                QFile file("out.csv");
+                if (file.open(QIODevice::WriteOnly | QIODevice::Append)) {
+                    if(!file.isOpen())
+                    {
+                        //alert that file did not open
+                        cout << "Couldn't open file";
+                    }
+
+                    QTextStream outStream(&file);
+                    outStream << frameNum << "," << summ << "\n";
+
+                    file.close();
                 }
-
-                QTextStream outStream(&file);
-                outStream << frameNum << "," << summ << "\n";
-
-                file.close();
             }
 
             prevFrameNum = frameNum;
@@ -397,6 +399,8 @@ void ProcessingThread::updateImageProcessingSettings(struct ImageProcessingSetti
     QMutexLocker locker(&processingMutex);
 
     this->imgProcSettings.amplification = imgProcessingSettings.amplification;
+    this->imgProcSettings.MagnifiedOrContours = imgProcessingSettings.MagnifiedOrContours;
+    this->imgProcSettings.CSV = imgProcessingSettings.CSV;
     this->imgProcSettings.coWavelength = imgProcessingSettings.coWavelength;
     this->imgProcSettings.coLow = imgProcessingSettings.coLow;
     this->imgProcSettings.coHigh = imgProcessingSettings.coHigh;

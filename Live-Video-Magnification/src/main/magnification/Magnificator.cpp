@@ -22,11 +22,9 @@
 /* along with this program.  If not, see <http://www.gnu.org/licenses/>.            */
 /************************************************************************************/
 
-// TODO: Frequency of 30-40% seemed decent.
-
 #include "main/magnification/Magnificator.h"
 #include "opencv2/opencv.hpp"
-#include <opencv2/core/mat.hpp> // didn't fix it
+#include <opencv2/core/mat.hpp>
 
 //using namespace cv;
 ////////////////////////
@@ -39,7 +37,7 @@ Magnificator::Magnificator(std::vector<cv::Mat> *pBuffer,
     processingBuffer(pBuffer),
     imgProcFlags(imageProcFlags),
     imgProcSettings(imageProcSettings),
-    numFrames(numFrames), // TODO might not need this, have CSV in processing.
+    numFrames(numFrames),
     currentFrame(0)
     {
         // Default magnification settings
@@ -181,186 +179,12 @@ string type2str(int type) {
   return r;
 }
 
-// TODO make a nice class OR delete
-int buff[30];
-int front = 0;
-int back = 0;
-void circBuffInsert(int input) {
-    buff[front++] = input;
-    front %= 30;
-}
-
-
-int circBuffLength() {
-   return front;
-}
-
-int circBuffAvg() {
-    int temp = 0;
-    for (int i = 0; i <= front; i++) {
-        temp += buff[i];
-    }
-    int tempfront = front;
-    if (tempfront == 0) {
-        tempfront = 1;
-    }
-    return temp /= tempfront;
-
-}
-
-int buff2[10];
-int front2 = 0;
-int back2 = 0;
-int length2 = 0;
-void circBuffInsert2(int input) {
-    buff2[front2++] = input;
-    front2 %= 10;
-    length2++;
-}
-
-
-int circBuffLength2() {
-    return length2;
-}
-
-int circBuffAvg2() {
-    int temp = 0;
-    for (int i = 0; i <= front2; i++) {
-        temp += buff2[i];
-    }
-    int tempfront = front2;
-    if (tempfront == 0) {
-        tempfront = 1;
-    }
-    return temp /= tempfront;
-
-}
-
-int circBuffMax2() {
-    int temp = buff2[0];
-    for (int i = 0; i <= front2; i++) {
-        if (buff2[i] > temp) {
-            temp = buff2[i];
-        }
-    }
-
-    return temp;
-
-}
-
-int buff3[10];
-int front3 = 0;
-int back3 = 0;
-int length3 = 0;
-void circBuffInsert3(int input) {
-    buff3[front3++] = input;
-    front3 %= 10;
-    length3++;
-}
-
-
-int circBuffLength3() {
-    return length3;
-}
-
-int circBuffAvg3() {
-    int temp = 0;
-    for (int i = 0; i <= front3; i++) {
-        temp += buff3[i];
-    }
-    int tempfront = front3;
-    if (tempfront == 0) {
-        tempfront = 1;
-    }
-    return temp /= tempfront;
-
-}
-
-int circBuffMax3() {
-    int temp = buff3[0];
-    for (int i = 0; i <= front3; i++) {
-        if (buff3[i] > temp) {
-            temp = buff3[i];
-        }
-    }
-
-    return temp;
-
-}
-
-
-// TODO delete these functions (useful for reference sort of)
-// using  crashes unsurprisingly.
-// https://cullensun.medium.com/agglomerative-clustering-for-opencv-contours-cd74719b678e
-// input a grayscale image.
-int calculateContourDistance(vector<cv::Point> contour1, vector<cv::Point> contour2) {
-
-    cv::Rect boundRect1 = cv::boundingRect(contour1);
-    cv::Rect boundRect2 = cv::boundingRect(contour2);
-
-
-    int height_1 = boundRect1.height;
-    int width_1 = boundRect1.width;
-    int x_1 = boundRect1.x;
-    int y_1 = boundRect1.y;
-    int c_x1 = x_1 + width_1/2;
-    int c_y1 = y_1 + height_1/2;
-
-    int height_2 = boundRect2.height;
-    int width_2 = boundRect2.width;
-    int x_2 = boundRect2.x;
-    int y_2 = boundRect2.y;
-    int c_x2 = x_2 + width_2/2;
-    int c_y2 = y_2 + height_2/2;
-
-    return max(abs(c_x1-c_x2) - (width_1 + width_2)/2, abs(c_y1 - c_y2) - (height_1 + height_2)/2);
-}
-
-vector<cv::Point> mergeContours(vector<cv::Point> contour1, vector<cv::Point> contour2) {
-    vector<cv::Point> out;
-//    out.reserve(contour1.size(), contour2.size());
-    out.insert(out.end(),contour1.begin(), contour1.end());
-    out.insert(out.end(),contour2.begin(), contour2.end());
-    return out;
-}
-
-vector<vector<cv::Point>> agglomerativeCluster(vector<vector<cv::Point>> contours, float thresholdDistance) {
-    vector<vector<cv::Point>> currentContours = contours;
-    while (currentContours.size() > 1) {
-        int minDistance = 0;
-        vector<int> minCoordinate;
-
-        for (int x = 0; x < currentContours.size()-1; x++) {
-            for (int y = x+1; y < currentContours.size(); y++) {
-                int distance = calculateContourDistance(currentContours[x], currentContours[y]);
-                if (minDistance == 0) {
-                    minDistance = distance;
-                    int coord[2] = {x, y};
-                    minCoordinate.assign(coord, coord+1);
-                }
-                else if (distance < minDistance) {
-                    minDistance = distance;
-                    int coord[2] = {x, y};
-                    minCoordinate.assign(coord, coord+1);
-                }
-            }
-        }
-
-        if (minDistance < thresholdDistance) {
-            currentContours[minCoordinate.at(0)] = mergeContours(currentContours[minCoordinate.at(0)], currentContours[minCoordinate.at(1)]);
-            currentContours.erase(currentContours.begin() + minCoordinate.at(1));
-        }
-
-    }
-}
-
-
 
 bool compareContoursPerimeter(vector<cv::Point> cont1, vector<cv::Point> cont2) { return cv::arcLength(cont1, 0) > cv::arcLength(cont2, 0); }
 
 bool compareContoursArea(vector<cv::Point> cont1, vector<cv::Point> cont2) { return cv::contourArea(cont1) > cv::contourArea(cont2); }
 
-int prevAvgContoursSum = 0; // todo fix this
+int prevAvgContoursSum = 0;
 int first = 1;
 void Magnificator::laplaceMagnify() {
     int pBufferElements = processingBuffer->size();
@@ -370,7 +194,6 @@ void Magnificator::laplaceMagnify() {
     // Number of levels in pyramid
 //    levels = DEFAULT_LAP_MAG_LEVELS;
     levels = imgProcSettings->levels;
-//    cout << "LEVELS: " + std::to_string(levels);
 
     cv::Mat input, output, motion, hsvimg, labimg, newestMotion, preparedFrame, firstContours, temp;
     vector<cv::Mat> inputPyramid;
@@ -444,25 +267,6 @@ void Magnificator::laplaceMagnify() {
         /* 5. ATTENUATE (if not grayscale) */
         attenuate(motion, motion);
 
-
-
-
-        /* OLD
-        // cvtColor(output, hsvimg, cv::COLOR_BGR2HSV); // convert to HSV?
-        // cvtColor(output, labimg, cv::COLOR_BGR2Lab); // convert to LAB?
-
-        // cvtColor(output, output, cv::COLOR_YCrCb2BGR); // convert back to BGR?
-
-        // const auto ycr = cv::mean(output); // Average Value of image, stored in array ycr[3]
-
-        // potentially another way to do this
-        // cv::Mat chann[3];
-        // chann = cv::split(output, chann);
-
-//        int x = motion.at<Vec3b>(10, 29)[0]; // Get green value of pixel 10,29
-         */
-        char str[8];
-
         /* 6. ADD MOTION TO ORIGINAL IMAGE */
         if(currentFrame > 0) {
             output = input+motion; // used in original
@@ -494,17 +298,10 @@ void Magnificator::laplaceMagnify() {
             temp.convertTo(temp, CV_8UC1, 255.0, 1.0/255.0);
         }
 
-//        cv::imshow("First", output);
-
         // detect motion between input and prevFrame. on 2nd+ frame. Then set prevFrame to input.
         // based upon https://towardsdatascience.com/image-analysis-for-beginners-creating-a-motion-detector-with-opencv-4ca6faba4b42
-        // Make this < 0 and edit above currentFrame >0 to original if want to just see original.
         if (currentFrame > 0) {
-
-//            newestMotion = output;
             newestMotion = temp;
-
-
 
             // convert prevFrame
             cvtColor(prevFrame, prevFrame, cv::COLOR_BGR2GRAY);
@@ -517,13 +314,8 @@ void Magnificator::laplaceMagnify() {
 
             preparedFrame = prevFrame;
 
-//            printf("%d AND %d AND %d", newestMotion.size(), prevFrame.size(), preparedFrame.size());
-//            cv::imshow("first", newestMotion);
-
-
             // Dif between previous, raw frame and newst output frame
             cv::absdiff(prevFrame, newestMotion, preparedFrame);
-
 
             cv::Mat one = cv::Mat::ones(2, 2, CV_8UC1);
 
@@ -541,36 +333,22 @@ void Magnificator::laplaceMagnify() {
             cvtColor(temp, temp, cv::COLOR_GRAY2BGR);
 //            cv::imshow("BGR", output); // here it's white and black, looks pretty decent.
 
+            // TODO: things to improve detection:
+            // FIND CLUSTERS OF CONTOURS sthat move together and track them.
+            // maybe do morebluring for noise reduction? as in https://docs.opencv.org/3.4/da/d0c/tutorial_bounding_rects_circles.html
+            // maybe try Hull from OpenCV?
 
-
-
-            //            cvtColor(output, output, cv::COLOR_BGR2HSV);
-//            cv::imshow("HSV", output); // why is it red?
-
-            // TODO: maybe do some bluring for noise reduction? as in https://docs.opencv.org/3.4/da/d0c/tutorial_bounding_rects_circles.html
-
-
-            // TODO try to track specific reocurring contours? Because sometiems it tracks shoulders which increases y values, sometiems only chest.
-            // The average Y value doesn't really matter, the CHANGE in Y matters.
-            // FIND CLUSTERS OF CONTOURS AND TRACK.
-            // contours approach below
+            // contours approach
             vector<vector<cv::Point>> contours;
-            cv::findContours(threshFrame, contours, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_TC89_L1); // maybe experiment w/ diff modes
-            // like CV_RETR_EXTERNAL might help a TON.
+            cv::findContours(threshFrame, contours, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_TC89_L1);
 
+            // init finalFrame
+            cv::Mat finalFrame = cv::Mat::zeros(input.size().height, input.size().width, CV_8UC3);
 
-//            cv::Mat finalFrame = cv::Mat::zeros(imgProcSettings->frameHeight, imgProcSettings->frameWidth, CV_8UC3); // don't remember why this is here and why it's 8UC3 not 8UC1.
-            cv::Mat finalFrame = cv::Mat::zeros(input.size().height, input.size().width, CV_8UC3); // don't remember why this is here and why it's 8UC3 not 8UC1.
-
-
-
-
-
-            // sort descending from largest contour.
+            // sort in descending from largest to smallest contour (based on contour area).
             std::sort(contours.begin(), contours.end(), compareContoursArea);
 
             int numContours = contours.size();
-
 
             int desiredLongest = 50;
             // draw contours on cv::Mat frame.
@@ -578,10 +356,10 @@ void Magnificator::laplaceMagnify() {
                 cv::drawContours(finalFrame, contours, i, cv::Scalar(0,255,0), 2, cv::LINE_AA);
             }
 
-
-            // TODO: try cv::medianBlur maybe to decrease noise
-
-//            output = finalFrame; // this is the frame after contours have been added.
+            // Toggle between showing the contours or magnified image based on button
+            if (imgProcSettings->MagnifiedOrContours) {
+                output = finalFrame; // this is the frame after contours have been added.
+            }
 
             // save the very first contours frame
             if (first) {
@@ -591,52 +369,36 @@ void Magnificator::laplaceMagnify() {
             }
 
 
-//            output = motion;
             // Iterate through up to the desiredLongest largest contours.
             int contoursSum = 0;
-            std::vector<std::pair<int, int>> avgCoords;
 
             for (size_t i = 0; i < std::min(numContours, desiredLongest); i++) {
-
-
-//                cout << contours[i] << endl; // Contours is a vector of contours(which are stored as point vectors)
+                // Contours is a vector of contours(which are stored as point vectors)
                 vector<cv::Point> pont = contours[i]; // pont is a contour defined as a vector consistuing of multiple points.
                 int ySum = 0;
-                int xSum = 0;
+
 
                 for (size_t j = 0; j < pont.size(); j++) {
                     ySum += pont[j].y; // A y coord of one the the vector points.
-                    xSum += pont[j].x; // A x coord of one the the vector points.
-//                    if (pont[j].y < ySum) { // minimum
+                    // use this if want to get minimum y-value.
+//                    if (pont[j].y < ySum) {
 //                        ySum = pont[j].y;
 //                    }
                 }
-                // TODO: This may work to cluster them?
-                // https://www.geeksforgeeks.org/closest-pair-of-points-using-divide-and-conquer-algorithm/
-                // avg x and y of this contour
+                // avg y of this contour
                 ySum /= pont.size();
-//                xSum /= pont.size();
-
-                // Add the par of avg x and y points to a vector
-//                avgCoords.push_back(std::pair<int, int>(xSum, ySum));
 
                 contoursSum += ySum;
             }
 
-//            if (avgCoords.size() > 0) {
-//                // accessing coord pairs of avgCoords
-////                cout << "It IS: " << std::to_string(avgCoords.at(0).first) << endl;
-//            }
-
-            // if only 15 contours, likely not breathing.
-            // change from 15 to 7
+            // if only 7 contours, likely not breathing.
             if (numContours <= 7) {
                 contoursSum = 0;
             } else {
                 contoursSum = contoursSum / std::min(numContours, desiredLongest);
             }
 
-            cout << "Avg contours y-value: " << contoursSum << " # contours: " << std::min(numContours, desiredLongest) << " Contours. " << endl;
+//            cout << "Avg contours y-value: " << contoursSum << " # contours: " << std::min(numContours, desiredLongest) << " Contours. " << endl;
 
 
             // set initial prevavgcontourssum if first frame.
@@ -651,7 +413,7 @@ void Magnificator::laplaceMagnify() {
             prevAvgContoursSum = contoursSum;
 
 
-
+// Example of adding text to the output video shown in the program.
 //            std::string txt;
 //            txt = "TEST. " + std::to_string(contoursSum) ;
 //            cv::putText(output, //target image
@@ -661,77 +423,9 @@ void Magnificator::laplaceMagnify() {
 //                        1.0,
 //                        CV_RGB(118, 185, 0), //font color
 //                        2);
-
-
-
-
-            // HULL - is interesting. Like approximates/ connects contours.
-//            vector<vector<cv::Point> >hull( contours.size() );
-//            for( size_t i = 0; i < contours.size(); i++ )
-//            {
-//                cv::convexHull( contours[i], hull[i] );
-//            }
-//            cv::drawContours(finalFrame, hull, -1, Scalar(255,0,0), 2, cv::LINE_AA);
-
-
-            // don't work below here.
-//            cout << endl << "Contour size: " << contours.size() << endl;
-            // attempt to get contour's coordinates
-//            vector<cv::Point> fifthcontour = contours[0]; // crashes???? why??? out of range?
-
-//            for (int i = 0; i < fifthcontour.size(); i++) {
-//                cv::Point coordinate_i_ofcontour = fifthcontour[i];
-//                cout << endl << "contour with coordinates: x = " << coordinate_i_ofcontour.x << " y = " << coordinate_i_ofcontour.y;
-//            }
-
-
-
-//            finalFrame.convertTo(finalFrame, CV_8UC1, 255.0, 1.0/255.0); // useless thing here.
-
-//            cv::imshow("Window", finalFrame);
-//            magnifiedBuffer.push_back(finalFrame);
-
-
-            // Get coords of contours
-//            for (int i = 0; i < countours; i++) {
-
-//            }
-
-//            contours.resize(contours0.size());
-//            for( size_t k = 0; k < contours.size(); k++ ) {
-//                vector<cv::Point> curcontour = contours.at(k);
-//                for (int i = 0; i < curcontour.size(); i++) {
-//                    cv::Point contPoint = curcontour[i];
-//                            cout << endl << "Current y value" << contPoint << endl;
-//                }
-//            }
-
-//            vector<vector<cv::Point>> contoursFin;
-//            for( size_t k = 0; k < contours.size(); k++ ) {
-//                cv::approxPolyDP(cv::Mat(contours[k]), contoursFin[k], 3, true);
-//            }
-
-
             prevFrame = input;
-
-
         }
 
-
-        // Make string to display on image (for convenience)
-//        sprintf(str, print); // green values string
-//        sprintf(str, "%d", currentFrame); // current frame (first frame is 0, rest are 1.)
-
-
-        // Put that string on the output
-//        cv::putText(output, //target image
-//                    str, //text
-//                    cv::Point(10, output.rows / 2), //top-left position
-//                    cv::FONT_HERSHEY_DUPLEX,
-//                    1.0,
-//                    CV_RGB(118, 185, 0), //font color
-//                    2);
-//        printf("Current frame: %d", currentFrame);
         // Fill internal buffer with magnified image
         magnifiedBuffer.push_back(output);
         ++currentFrame;

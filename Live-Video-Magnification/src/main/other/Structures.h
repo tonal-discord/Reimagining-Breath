@@ -38,6 +38,8 @@ struct ImageProcessingSettings{
     int frameHeight;
     double framerate;
     int levels;
+    bool CSV;
+    bool MagnifiedOrContours;
 
     ImageProcessingSettings() :
         amplification(0.0),
@@ -48,7 +50,9 @@ struct ImageProcessingSettings{
         frameWidth(0),
         frameHeight(0),
         framerate(0.0),
-        levels(4)
+        levels(4),
+        CSV(false),
+        MagnifiedOrContours(false)
     {
     }
 };

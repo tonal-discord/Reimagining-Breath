@@ -24,6 +24,7 @@
 
 #include "main/ui/MagnifyOptions.h"
 #include "ui_MagnifyOptions.h"
+#include <iostream>
 
 MagnifyOptions::MagnifyOptions(QWidget *parent) :
     QWidget(parent),
@@ -62,7 +63,11 @@ MagnifyOptions::MagnifyOptions(QWidget *parent) :
 
     // Other
     connect(ui->resetButton, SIGNAL(clicked()), SLOT(reset()));
+    connect(ui->MagnifiedOrContours, SIGNAL(clicked()), SLOT(toggleMagnifiedOrContours()));
     connect(ui->grayscaleCheckBox, SIGNAL(clicked()), SLOT(updateFlagsFromOptionsTab()));
+
+    connect(ui->CSVOutput, SIGNAL(clicked()), SLOT(updateSettingsFromOptionsTab()));
+//    connect(ui->MagnifiedOrContours, SIGNAL(clicked()), SLOT(reset()));
 
     // Initialize Settings with Default values
     ui->MagnifcationtypeComboBox->setCurrentIndex(DEFAULT_MAGNIFY_TYPE);
@@ -148,6 +153,11 @@ void MagnifyOptions::convertFromSlider(int val)
     }
 }
 
+
+void MagnifyOptions::toggleMagnifiedOrContours() {
+    imgProcSettings.MagnifiedOrContours = !imgProcSettings.MagnifiedOrContours;
+    emit newImageProcessingSettings(imgProcSettings);
+}
 // Reset everything to Default, configured in Config.h, depending on Magnify Type. On Start its 0
 void MagnifyOptions::reset()
 {
@@ -227,6 +237,8 @@ void MagnifyOptions::reset()
         ui->hiBpm->hide();
         ui->HzSpacer->hide();
 
+        ui->CSVOutput->hide();
+        ui->MagnifiedOrContours->hide();
         ui->resetButton->hide();
 
         break;
@@ -282,6 +294,10 @@ void MagnifyOptions::updateSettingsFromOptionsTab()
 
         imgProcSettings.chromAttenuation = ui->ChromSpinBox->value()/100.0;
         imgProcSettings.levels = ui->LevelsSpinBox->value();
+
+        imgProcSettings.CSV = ui->CSVOutput->isChecked();
+
+
     }
     else if(imgProcFlags.rieszMagnifyOn)
     {
@@ -390,6 +406,8 @@ void MagnifyOptions::applyLaplaceInterface()
     ui->DoubleSliderValLabel->setText("%");
 
     ui->resetButton->show();
+    ui->CSVOutput->show();
+    ui->MagnifiedOrContours->show();
 }
 
 void MagnifyOptions::applyRieszInterface()

@@ -111,6 +111,7 @@ class ProcessingThread : public QThread
         int prevFrameNum = 0;
         int breathValues[3];
         float prevSumm = 0;
+        bool CSV;
 
     protected:
         void run();

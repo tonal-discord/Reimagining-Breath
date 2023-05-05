@@ -139,6 +139,7 @@ private:
         int prevFrameNum = 0;
         int breathValues[3];
         float prevSumm = 0;
+        bool CSV;
 
 
 protected:
