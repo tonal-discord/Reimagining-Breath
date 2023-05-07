@@ -97,7 +97,10 @@ If you installed Python through the windows store, you will probably be missing 
 
 
 ## Developing on Linux (Fedora Workstation 37)
-
+1. Install opencv, gcc-c++, GL stuff: `sudo dnf install opencv opencv-devel gcc-c++ glew-devel SDL2-devel SDL2_image-devel glm-devel freetype-devel`
+2. Install Qt Creator (you will have to make an account) [here](https://www.qt.io/download-qt-installer-oss) 
+3. You may have to edit the kits, manually set the C++ compiler to your GCC path.
+4. In Qt Creator, open a new project and select `./src/rvm.pro`
 
 ## Installing on Linux Virtual Machine 
 You can make a fedora virtual machine to try it out. Not sure if/how you can pass your webcam into the virtual machine.
