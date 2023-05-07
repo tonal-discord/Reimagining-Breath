@@ -3,7 +3,7 @@ See link above or read orignal_README.md for details, it's pretty thorough.
 
 ## Using the program
 TLDR:
-1. Open rvm.exe (or Linux version)
+1. Open rvm.exe <(or Linux version)>
 2. Press "OK" or change options if you desire
 3. Switch magnification type box to "Laplace"
 4. The "CSV output" checkbox outputs the breath values to a CSV file called "out.csv" in the same directory as the executable when checked. The file will not delete or clear itself.
@@ -97,14 +97,7 @@ If you installed Python through the windows store, you will probably be missing 
 
 
 ## Developing on Linux (Fedora Workstation 37)
-
-
-## Installing on Linux Virtual Machine 
-You can make a fedora virtual machine to try it out. Not sure if/how you can pass your webcam into the virtual machine.
-1. Follow this: (use Fedora 37)https://www.youtube.com/watch?v=plH5iX3RzHg 
-2. Once installed, run this command in the terminal: `dnf install -y opencv qtcreator`
-3. Copy the program into the virtual machine, run `./build-rvm-Desktop-Debug/rvm` and the program should work
-4. You can also open qtcreator in the virual machine and run the program through that.
+- see linux branch. The program doesn't work quite right on Linux, needs more development.
 
 ### Dependencies:
 These versions were used during development:
