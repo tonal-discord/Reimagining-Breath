@@ -1,5 +1,18 @@
-# Re-Imaging Breath Spring 2023
+# Re-Imagining Breath Spring 2023
 ### By: Tyler Dronen, Fiorela Esquivel-Martinez, John Kujawa, Amanda Li, George Thao
+
+### Running the program
+1. Download the [release](https://github.com/kujaw077/senior-design-project/releases/download/v1.0.0/Re-Imagining.Breath.v1.0.0.zip)(also shown on right side under "Releases")
+2. Extract
+3. Open realtime-video-magnification folder, run `rvm.exe` <or LINUX TBD>
+    - Click "Connect/Open"
+    - May need to change camera device number if you aren't using default webcam
+    - Change other options if desired
+    - Press "OK"
+    - Switch magnification type box to "Laplace"
+    - You should see your webcam magnified now in the preview
+4. Open GUI folder, run `gui_with_logic.exe` <or LINUX TBD>
+5. Should be good to go!
 
 ### In this repository:
 [`./Live-Video-Magnification`](https://github.com/tschnz/Live-Video-Magnification) (**see README in this directory for details**): 
