@@ -378,7 +378,8 @@ class GUI:
             
         self.closeVideo()
         # Close shared mem
-        shm_a.close()
+        if shm_a is not None:
+            shm_a.close()
 
             
 
