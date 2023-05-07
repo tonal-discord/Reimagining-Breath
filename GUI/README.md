@@ -1,11 +1,15 @@
 ## Re-Imagining Breath GUI
 ### Running instructions
+- Run `gui_with_logic.py` 
 
-- Run `gui_with_logic.py` (while the  gui.py file is what everything was before merging your playback logic in), 
+Note: cursor doesn't work on Linux. Use linux branch or edit line 89 to `self.window.configure(bg="black")`.
+
+### About
 - Play() function starts on line 193 (for video speed/direction)
 - other files: thumbnails, videos folders, and cursor_20t.cur file. 
-	- only first 9 videos and thumbnails included to save space, rest are available in Google Drive.
 - To use a Joy-Con with it: connect a right joycon via Bluetooth to your computer, then you'll also need the `joycon.py` file, 
+
+
 
 ### Requirements 
 - Python 3.8+ (should work probably)
