@@ -1,12 +1,13 @@
-# senior-design-project
+# Re-Imaging Breath Spring 2023
+### By: Tyler Dronen, Fiorela Esquivel-Martinez, John Kujawa, Amanda Li, George Thao
 
 ## Computer Vision Stuff (Eulerian Video Magnification)
 [Original EVM paper](http://people.csail.mit.edu/mrub/vidmag/) (has Matlab code too)
 
 ### In this repository:
-[`./Live-Video-Magnification`](https://github.com/tschnz/Live-Video-Magnification) (**see README in there for details**): 
-An OpenCV/Qt based realtime application for Eulerian Video Magnification. Works with multiple videos and cameras at the same time and let's you export the magnified videos.
+[`./Live-Video-Magnification`](https://github.com/tschnz/Live-Video-Magnification) (**see README in this directory for details**): 
+An OpenCV/Qt C++ based realtime application for Eulerian Video Magnification. Works with multiple videos and cameras at the same time and let's you export the magnified videos.
 
-### Potential things:
-A [python version](https://github.com/hbenbel/Eulerian-Video-Magnification) exists, but it was crashing for me.
+`./GUI`(https://github.com/tschnz/Live-Video-Magnification) (**see README in this directory for details**): 
+A Python based graphical user interface that displays a grid of videos that a user can select using a mouse or Nintendo Joy-Con to be played based on the output of the `./Live-Video-Magnification` application. 
 
