@@ -77,47 +77,72 @@ void PlayerThread::run()
     qDebug() << "Starting player thread...";
     QElapsedTimer mTime;
 
-    // Shared memory init
-    HANDLE hMapFile;
-    LPCTSTR pBuf;
 
-    int temp;
+    int temp = magnificator.breathMeasureOutput;
     int *point2;
     point2 = &temp;
+    #ifdef __linux__
+//        // Linux shmem
+//        // via https://www.stuffaboutcode.com/2013/08/shared-memory-c-python-ipc.html
+        int shmid;
+        // give your shared memory an id, anything will do
+        key_t key = 123456;
+        void *shared_memory; // changed from char to void
+
+        // Setup shared memory, 11 is the size
+        if ((shmid = shmget(key, 11, IPC_CREAT | 0666)) < 0)
+        {
+            printf("Error getting shared memory id");
+            exit(1);
+        }
+        // Attached shared memory
+        if ((shared_memory = shmat(shmid, 0, 0)) == (char *) -1)
+        {
+            printf("Error attaching shared memory id");
+            exit(1);
+        }
+
+    #elif _WIN32
+        // Windows
+        // Shared memory init
+        HANDLE hMapFile;
+        LPCTSTR pBuf;
+
+        // shared memory init
+        TCHAR szName[]=TEXT("ReimaginingBreath");
 
 
-    TCHAR szName[]=TEXT("ReimaginingBreath");
-    TCHAR szMsg[]=TEXT("YOssage from first process.");
+        hMapFile = CreateFileMapping(
+            INVALID_HANDLE_VALUE,    // use paging file
+            NULL,                    // default security
+            PAGE_READWRITE,          // read/write access
+            0,                       // maximum object size (high-order DWORD)
+            BUF_SIZE,                // maximum object size (low-order DWORD)
+            szName);                 // name of mapping object
 
+        if (hMapFile == NULL)
+        {
+            _tprintf(TEXT("Could not create file mapping object (%d).\n"),
+                     GetLastError());
+        }
+        pBuf = (LPTSTR) MapViewOfFile(hMapFile,   // handle to map object
+                                      FILE_MAP_ALL_ACCESS, // read/write permission
+                                      0,
+                                      0,
+                                      BUF_SIZE);
 
-    hMapFile = CreateFileMapping(
-        INVALID_HANDLE_VALUE,    // use paging file
-        NULL,                    // default security
-        PAGE_READWRITE,          // read/write access
-        0,                       // maximum object size (high-order DWORD)
-        BUF_SIZE,                // maximum object size (low-order DWORD)
-        szName);                 // name of mapping object
+        if (pBuf == NULL)
+        {
+            _tprintf(TEXT("Could not map view of file (%d).\n"),
+                     GetLastError());
 
-    if (hMapFile == NULL)
-    {
-        _tprintf(TEXT("Could not create file mapping object (%d).\n"),
-                 GetLastError());
+            CloseHandle(hMapFile);
+        }
     }
-    pBuf = (LPTSTR) MapViewOfFile(hMapFile,   // handle to map object
-                                  FILE_MAP_ALL_ACCESS, // read/write permission
-                                  0,
-                                  0,
-                                  BUF_SIZE);
 
-    if (pBuf == NULL)
-    {
-        _tprintf(TEXT("Could not map view of file (%d).\n"),
-                 GetLastError());
+    #else
+    #endif
 
-        CloseHandle(hMapFile);
-    }
-
-    // end shared memory init
 
     /////////////////////////////////////
     /// Stop thread if doStop=TRUE /////
@@ -273,8 +298,12 @@ void PlayerThread::run()
 
             temp = summ;
 
-
-            CopyMemory((PVOID)pBuf, point2, sizeof(int));
+            #ifdef __linux__
+                memcpy(shared_memory, point2, sizeof(int));
+            #elif _WIN32
+                CopyMemory((PVOID)pBuf, point2, sizeof(int));
+            #else
+            #endif
 
             if (imgProcSettings.CSV) {
                 QFile file("out.csv");
@@ -335,9 +364,17 @@ void PlayerThread::run()
         int wait = max(delay-diff,0.0);
         this->msleep(wait);
     }
-    UnmapViewOfFile(pBuf);
 
-    CloseHandle(hMapFile);
+    // close shared mem
+    #ifdef __linux__
+//        // Detach and remove shared memory
+        shmdt(shared_memory);
+        shmctl(shmid, IPC_RMID, NULL);
+    #elif _WIN32
+        UnmapViewOfFile(pBuf);
+        CloseHandle(hMapFile);
+    #else
+    #endif
 
     qDebug() << "Stopping player thread...";
 }
@@ -367,7 +404,8 @@ bool PlayerThread::loadFile()
 {
     // Just in case, release file
     releaseFile();
-    cap = cv::VideoCapture(filepath);
+
+    cap = cv::VideoCapture(filepath, cv::CAP_GSTREAMER);
 
     // Open file
     bool openResult = isFileLoaded();

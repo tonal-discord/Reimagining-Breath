@@ -1,4 +1,5 @@
 import time
+import sys
 import os
 import cv2
 import argparse
@@ -9,6 +10,9 @@ from PIL import Image, ImageTk
 from multiprocessing import shared_memory
 import numpy as np
 
+# Import linux stuff if linux
+if not(sys.platform.startswith('win32') or sys.platform.startswith('cygwin')):
+    import sysv_ipc
 
 # https://stackoverflow.com/questions/22583391/peak-signal-detection-in-realtime-timeseries-data/56451135#56451135
 class real_time_peak_detection():
@@ -86,7 +90,7 @@ class GUI:
         self.window.title("Re-Imagining Breath Video Player GUI")
         self.window.attributes('-fullscreen',True)
         # self.window.geometry("800x800")
-        self.window.configure(bg="black", cursor="@cursor_20t.cur") # changing system cursor size to 9 is about good
+        self.window.configure(bg="black") # custom cursor doesn't work with this on linux'
         self.window.columnconfigure(0, weight=1)
         self.window.rowconfigure(1, weight=1)
 
@@ -294,22 +298,46 @@ class GUI:
         while 1:
             i += 1
             self.window.update() 
-            try:
-                shm_a = shared_memory.SharedMemory(name="ReimaginingBreath", size=10)
-                break
-            except:
-                print("Could not open shared memory, trying again.")
+            
+            if sys.platform.startswith('win32') or sys.platform.startswith('cygwin'):
+                print("test")
+                try:
+                    shm_a = shared_memory.SharedMemory(name="ReimaginingBreath", size=10)
+                except:
+                    print("Could not open shared memory, trying again.")
 
-                # if still not open after 10 seconds, display error msg and close video.
-                if i == 10:
-                    i = 0
-                    top= Toplevel(self.window)
-                    top.geometry("400x100")
-                    top.title("Error")
-                    Label(top, text="Could not open shared memory. Is realtime video magnification running?", fg="black").place(relx=0.5, rely=0.5, anchor=CENTER)
-                    self.closeVideo()
-                    break
-                time.sleep(1)
+                    # if still not open after 10 seconds, display error msg and close video.
+                    if i == 10:
+                        i = 0
+                        top= Toplevel(self.window)
+                        top.geometry("400x100")
+                        top.title("Error")
+                        Label(top, text="Could not open shared memory. Is realtime video magnification running?", fg="black").place(relx=0.5, rely=0.5, anchor=CENTER)
+                        self.closeVideo()
+                        break
+                    time.sleep(1)
+            else:
+                try:
+                    memory = sysv_ipc.SharedMemory(123456) 
+                    memory_value = memory.read()
+                    print (int.from_bytes(bytes(memory_value), 'little'))
+                except:
+                    print("Could not open shared memory, trying again.")
+
+                    # if still not open after 10 seconds, display error msg and close video.
+                    if i == 10:
+                        i = 0
+                        top= Toplevel(self.window)
+                        top.geometry("400x100")
+                        top.title("Error")
+                        Label(top, text="Could not open shared memory. Is realtime video magnification running?", fg="black").place(relx=0.5, rely=0.5, anchor=CENTER)
+                        self.closeVideo()
+                        break
+                    time.sleep(1)
+                
+        
+
+
 
         slopelist = []
         prevValue = 0

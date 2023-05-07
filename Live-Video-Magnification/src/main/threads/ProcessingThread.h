@@ -24,16 +24,41 @@
 
 #ifndef PROCESSINGTHREAD_H
 #define PROCESSINGTHREAD_H
-#define BUF_SIZE 256
-// Windows/C++
-#include <windows.h>
+
+// C++
+#include <cmath>
 #include <stdio.h>
-#include <conio.h>
-#include <tchar.h>
-#include <memoryapi.h>
-#include <handleapi.h>
 #include <iostream>
-#include <WinNT.h>
+
+#ifdef __linux__
+// Linux
+    #include <stdio.h>
+    #include <string.h>
+    #include <stdlib.h>
+    #include <sys/types.h>
+    #include <sys/ipc.h>
+    #include <sys/shm.h>
+#elif _WIN32
+// Windows
+    #define BUF_SIZE 256
+    #include <windows.h>
+    #include <WinNT.h>
+    #include <conio.h>
+    #include <tchar.h>
+    #include <memoryapi.h>
+    #include <handleapi.h>
+#else
+#endif
+
+
+#ifdef __linux__
+// Linux
+
+#elif _WIN32
+// Windows
+
+#else
+#endif
 
 // Qt
 #include <QtCore/QThread>
