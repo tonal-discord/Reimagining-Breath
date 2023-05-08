@@ -404,8 +404,7 @@ bool PlayerThread::loadFile()
 {
     // Just in case, release file
     releaseFile();
-
-    cap = cv::VideoCapture(filepath, cv::CAP_GSTREAMER);
+    cap = cv::VideoCapture(filepath);
 
     // Open file
     bool openResult = isFileLoaded();

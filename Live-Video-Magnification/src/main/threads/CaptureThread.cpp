@@ -94,19 +94,18 @@ bool CaptureThread::connectToCamera()
     // OpenCV's default is 640x480.
     if(width != -1)
         cap.set(cv::CAP_PROP_FRAME_WIDTH, width);
-    else {
-        cap.set(cv::CAP_PROP_FRAME_WIDTH, 1280);
-    }
+    // else {
+    //     cap.set(cv::CAP_PROP_FRAME_WIDTH, 1280);
+    // }
 
     if(height != -1)
         cap.set(cv::CAP_PROP_FRAME_HEIGHT, height);
-    else {
-        cap.set(cv::CAP_PROP_FRAME_HEIGHT, 720);
-    }
+    // else {
+    //     cap.set(cv::CAP_PROP_FRAME_HEIGHT, 720);
+    // }
     // Set maximum frames per second
     if(fpsGoal != -1)
         cap.set(cv::CAP_PROP_FPS, fpsGoal);
-
     // Return result
     return camOpenResult;
 }

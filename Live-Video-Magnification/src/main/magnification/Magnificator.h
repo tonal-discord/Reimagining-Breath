@@ -34,7 +34,6 @@
 #include "opencv2/core/core.hpp"
 #include "opencv2/imgproc/imgproc.hpp"
 #include "opencv2/highgui/highgui.hpp"
-#include <opencv2/core/mat.hpp> // didn't fix it?
 // Local
 #include "main/magnification/SpatialFilter.h"
 #include "main/magnification/TemporalFilter.h"
@@ -189,11 +188,6 @@ private:
      * \brief levels Number of levels for Laplace/Gauss Pyramid.
      */
     int levels;
-
-    int width;
-
-
-
 
     ////////////////////////
     ///Cache ///////// ///////
