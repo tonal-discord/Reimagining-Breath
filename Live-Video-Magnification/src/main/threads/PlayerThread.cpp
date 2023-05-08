@@ -191,7 +191,7 @@ void PlayerThread::run()
         // Fill buffer, check if it's the start of magnification or not
         for(int i = processingBuffer.size(); i < processingBufferLength && getCurrentFramenumber() < lengthInFrames; i++) {
             processingMutex.lock();
-
+            
             // Try to grab the next Frame
             if(cap.read(grabbedFrame)) {
                 // Preprocessing
@@ -210,6 +210,7 @@ void PlayerThread::run()
 
             // Wasn't able to grab frame, abort thread
             else {
+                cout << "FAIL." << endl;
                 processingMutex.unlock();
                 endOfFrame_action();
                 break;

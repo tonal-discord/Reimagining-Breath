@@ -316,7 +316,7 @@ void ProcessingThread::run()
 
 
             #ifdef __linux__
-                memcpy(shared_memory, "Hello World", sizeof("Hello World"));
+                memcpy(shared_memory, point2, sizeof(int));
             #elif _WIN32
                 CopyMemory((PVOID)pBuf, point2, sizeof(int));
             #else

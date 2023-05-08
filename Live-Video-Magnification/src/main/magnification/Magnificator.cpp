@@ -23,6 +23,8 @@
 /************************************************************************************/
 
 #include "main/magnification/Magnificator.h"
+#include "opencv2/opencv.hpp"
+#include <opencv2/core/mat.hpp>
 
 //using namespace cv;
 ////////////////////////
@@ -37,14 +39,14 @@ Magnificator::Magnificator(std::vector<cv::Mat> *pBuffer,
     imgProcSettings(imageProcSettings),
     numFrames(numFrames),
     currentFrame(0)
-    {
-        // Default magnification settings
-        levels = 4;
-        exaggeration_factor = 2.f;
-        lambda = 0;
-        delta = 0;
-        breathMeasureOutput = 0;
-    }
+{
+    // Default magnification settings
+    levels = 4;
+    exaggeration_factor = 2.f;
+    lambda = 0;
+    delta = 0;
+    breathMeasureOutput = 0;
+}
 Magnificator::~Magnificator()
 {
     clearBuffer();
@@ -72,6 +74,7 @@ int Magnificator::calculateMaxLevels(cv::Size s)
 ////////////////////////
 ///Magnification ///////
 ////////////////////////
+/// prevAvg
 void Magnificator:: colorMagnify() {
     int pBufferElements = processingBuffer->size();
     // Magnify only when processing buffer holds new images
@@ -154,12 +157,12 @@ void Magnificator:: colorMagnify() {
 //            string ty =  type2str( prevFrame.type() );
 //            printf("Matrix: %s %dx%d \n", ty.c_str(), prevFrame.cols, prevFrame.rows );
 string type2str(int type) {
-  string r;
+    string r;
 
-  uchar depth = type & CV_MAT_DEPTH_MASK;
-  uchar chans = 1 + (type >> CV_CN_SHIFT);
+    uchar depth = type & CV_MAT_DEPTH_MASK;
+    uchar chans = 1 + (type >> CV_CN_SHIFT);
 
-  switch ( depth ) {
+    switch ( depth ) {
     case CV_8U:  r = "8U"; break;
     case CV_8S:  r = "8S"; break;
     case CV_16U: r = "16U"; break;
@@ -168,12 +171,12 @@ string type2str(int type) {
     case CV_32F: r = "32F"; break;
     case CV_64F: r = "64F"; break;
     default:     r = "User"; break;
-  }
+    }
 
-  r += "C";
-  r += (chans+'0');
+    r += "C";
+    r += (chans+'0');
 
-  return r;
+    return r;
 }
 
 
@@ -189,7 +192,7 @@ void Magnificator::laplaceMagnify() {
     if(currentFrame >= pBufferElements)
         return;
     // Number of levels in pyramid
-//    levels = DEFAULT_LAP_MAG_LEVELS;
+    //    levels = DEFAULT_LAP_MAG_LEVELS;
     levels = imgProcSettings->levels;
 
     cv::Mat input, output, motion, hsvimg, labimg, newestMotion, preparedFrame, firstContours, temp;
@@ -204,225 +207,224 @@ void Magnificator::laplaceMagnify() {
             prevFrame = input; // save first raw input as prevFrame (for motion)
         }
 
-            else {
-                processingBuffer->erase(processingBuffer->begin()); // delete oldest frame
-//                cv::imshow("First", prevFrame); // NOTE using imshow does not close the program.
+        else {
+            processingBuffer->erase(processingBuffer->begin()); // delete oldest frame
+            //                cv::imshow("First", prevFrame); // NOTE using imshow does not close the program.
         }
 
 
+        // Convert input image to 32bit float
+        pChannels = input.channels();
+        if(!(imgProcFlags->grayscaleOn || pChannels <= 2)) {
+            // Convert color images to YCrCb
+            input.convertTo(input, CV_32FC3, 1.0/255.0f);
+            cvtColor(input, input, cv::COLOR_BGR2YCrCb);
+        }
+        else
+            input.convertTo(input, CV_32FC1, 1.0/255.0f);
+
+        /* 1. SPATIAL FILTER, BUILD LAPLACE PYRAMID */
+        buildLaplacePyrFromImg(input, levels, inputPyramid);
+
+        // If first frame ever, save unfiltered pyramid
+        if(currentFrame == 0) {
+            lowpassHi = inputPyramid;
+            lowpassLo = inputPyramid;
+            motionPyramid = inputPyramid;
+        } else {
+            /* 2. TEMPORAL FILTER EVERY LEVEL OF LAPLACE PYRAMID */
+            for (int curLevel = 0; curLevel < levels; ++curLevel) {
+                iirFilter(inputPyramid.at(curLevel), motionPyramid.at(curLevel), lowpassHi.at(curLevel), lowpassLo.at(curLevel),
+                          imgProcSettings->coLow, imgProcSettings->coHigh);
+            }
+
+            int w = input.size().width;
+            int h = input.size().height;
+
+            // Amplification variable
+            delta = imgProcSettings->coWavelength / (8.0 * (1.0 + imgProcSettings->amplification));
+
+            // Amplification Booster for better visualization
+            exaggeration_factor = DEFAULT_LAP_MAG_EXAGGERATION;
+
+            // compute representative wavelength, lambda
+            // reduces for every pyramid level
+            lambda = sqrt(w*w + h*h)/3.0;
+
+            /* 3. AMPLIFY EVERY LEVEL OF LAPLACE PYRAMID */
+            for (int curLevel = levels; curLevel >= 0; --curLevel) {
+                amplifyLaplacian(motionPyramid.at(curLevel), motionPyramid.at(curLevel), curLevel);
+                lambda /= 2.0;
+            }
+        }
+
+        // Motion is nothing up until this point
+        /* 4. RECONSTRUCT MOTION IMAGE FROM PYRAMID */
+        buildImgFromLaplacePyr(motionPyramid, levels, motion);
+
+
+
+        /* 5. ATTENUATE (if not grayscale) */
+        attenuate(motion, motion);
+
+        /* 6. ADD MOTION TO ORIGINAL IMAGE */
+        if(currentFrame > 0) {
+            output = input+motion; // used in original
+            temp = motion;
+            //             output = motion;
+            //            output = hsvimg;
+        }
+        else {
+            output = input;
+            temp = input;
+        }
+
+        // Scale output image an convert back to 8bit unsigned
+        if(!(imgProcFlags->grayscaleOn || pChannels <= 2)) {
+            // Convert YCrCb image back to BGR
+            cvtColor(output, output, cv::COLOR_YCrCb2BGR);
+            output.convertTo(output, CV_8UC3, 255.0, 1.0/255.0);
+        }
+        else {
+            output.convertTo(output, CV_8UC1, 255.0, 1.0/255.0);
+        }
+
+        if(!(imgProcFlags->grayscaleOn || pChannels <= 2)) {
+            // Convert YCrCb image back to BGR
+            cvtColor(temp, temp, cv::COLOR_YCrCb2BGR);
+            temp.convertTo(temp, CV_8UC3, 255.0, 1.0/255.0);
+        }
+        else {
+            temp.convertTo(temp, CV_8UC1, 255.0, 1.0/255.0);
+        }
+
+        // detect motion between input and prevFrame. on 2nd+ frame. Then set prevFrame to input.
+        // based upon https://towardsdatascience.com/image-analysis-for-beginners-creating-a-motion-detector-with-opencv-4ca6faba4b42
         if (currentFrame > 0) {
-                // Convert input image to 32bit float
-                pChannels = input.channels();
-                if(!(imgProcFlags->grayscaleOn || pChannels <= 2)) {
-                    // Convert color images to YCrCb
-                    input.convertTo(input, CV_32FC3, 1.0/255.0f);
-                    cvtColor(input, input, cv::COLOR_BGR2YCrCb);
-                }
-                else
-                    input.convertTo(input, CV_32FC1, 1.0/255.0f);
+            newestMotion = temp;
 
-                /* 1. SPATIAL FILTER, BUILD LAPLACE PYRAMID */
-                buildLaplacePyrFromImg(input, levels, inputPyramid);
+            // convert prevFrame
+            cvtColor(prevFrame, prevFrame, cv::COLOR_BGR2GRAY);
+            cv::GaussianBlur(prevFrame, prevFrame, cv::Size(5,5), 0, 0);
+            prevFrame.convertTo(prevFrame, CV_8UC1, 255.0, 1.0/255.0);
 
-                // If first frame ever, save unfiltered pyramid
-                if(currentFrame == 0) {
-                    lowpassHi = inputPyramid;
-                    lowpassLo = inputPyramid;
-                    motionPyramid = inputPyramid;
-                } else {
-                    /* 2. TEMPORAL FILTER EVERY LEVEL OF LAPLACE PYRAMID */
-                    for (int curLevel = 0; curLevel < levels; ++curLevel) {
-                        iirFilter(inputPyramid.at(curLevel), motionPyramid.at(curLevel), lowpassHi.at(curLevel), lowpassLo.at(curLevel),
-                                imgProcSettings->coLow, imgProcSettings->coHigh);
-                    }
+            // convert newestMotion as a gray of output
+            cvtColor(temp, newestMotion, cv::COLOR_BGR2GRAY);
+            cv::GaussianBlur(newestMotion, newestMotion, cv::Size(5,5), 0, 0);
 
-                    int w = input.size().width;
-                    int h = input.size().height;
+            preparedFrame = prevFrame;
 
-                    // Amplification variable
-                    delta = imgProcSettings->coWavelength / (8.0 * (1.0 + imgProcSettings->amplification));
+            // Dif between previous, raw frame and newst output frame
+            cv::absdiff(prevFrame, newestMotion, preparedFrame);
 
-                    // Amplification Booster for better visualization
-                    exaggeration_factor = DEFAULT_LAP_MAG_EXAGGERATION;
+            cv::Mat one = cv::Mat::ones(2, 2, CV_8UC1);
 
-                    // compute representative wavelength, lambda
-                    // reduces for every pyramid level
-                    lambda = sqrt(w*w + h*h)/3.0;
+            cv::dilate(preparedFrame, preparedFrame, one, cv::Point(-1,-1), 1);
 
-                    /* 3. AMPLIFY EVERY LEVEL OF LAPLACE PYRAMID */
-                    for (int curLevel = levels; curLevel >= 0; --curLevel) {
-                        amplifyLaplacian(motionPyramid.at(curLevel), motionPyramid.at(curLevel), curLevel);
-                        lambda /= 2.0;
-                    }
-                }
+            cv::Mat threshFrame;
+            cv::threshold(preparedFrame, threshFrame, 20, 255, cv::THRESH_BINARY); // 20, 255 are the thresholds.
 
-                // Motion is nothing up until this point
-                /* 4. RECONSTRUCT MOTION IMAGE FROM PYRAMID */
-                buildImgFromLaplacePyr(motionPyramid, levels, motion);
+            bitwise_not(threshFrame, threshFrame); // invert image so foreground is white, background is black. (contours detct white on black)
+
+            // threshold frame honestly looks pretty good, if can find countours in that then do area from the tutorial, etc.
+            temp = threshFrame; // Set the output to threshold frame.
 
 
+            cvtColor(temp, temp, cv::COLOR_GRAY2BGR);
+            //            cv::imshow("BGR", output); // here it's white and black, looks pretty decent.
 
-                /* 5. ATTENUATE (if not grayscale) */
-                attenuate(motion, motion);
+            // TODO: things to improve detection:
+            // FIND CLUSTERS OF CONTOURS sthat move together and track them.
+            // maybe do morebluring for noise reduction? as in https://docs.opencv.org/3.4/da/d0c/tutorial_bounding_rects_circles.html
+            // maybe try Hull from OpenCV?
 
-                /* 6. ADD MOTION TO ORIGINAL IMAGE */
-            
-                output = input+motion; // used in original
-                temp = motion;
-    //             output = motion;
-    //            output = hsvimg;
-            }
-            else {
-                output = input;
-                temp = input;
+            // contours approach
+            vector<vector<cv::Point>> contours;
+            cv::findContours(threshFrame, contours, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_TC89_L1);
+
+            // init finalFrame
+            cv::Mat finalFrame = cv::Mat::zeros(input.size().height, input.size().width, CV_8UC3);
+
+            // sort in descending from largest to smallest contour (based on contour area).
+            std::sort(contours.begin(), contours.end(), compareContoursArea);
+
+            int numContours = contours.size();
+
+            int desiredLongest = 50;
+            // draw contours on cv::Mat frame.
+            for (int i = 0; i < std::min(numContours, desiredLongest); i++) {
+                cv::drawContours(finalFrame, contours, i, cv::Scalar(0,255,0), 2, cv::LINE_AA);
             }
 
-            // Scale output image an convert back to 8bit unsigned
-            if(!(imgProcFlags->grayscaleOn || pChannels <= 2)) {
-                // Convert YCrCb image back to BGR
-                cvtColor(output, output, cv::COLOR_YCrCb2BGR);
-                output.convertTo(output, CV_8UC3, 255.0, 1.0/255.0);
-            }
-            else {
-                output.convertTo(output, CV_8UC1, 255.0, 1.0/255.0);
+            // Toggle between showing the contours or magnified image based on button
+            if (imgProcSettings->MagnifiedOrContours) {
+                output = finalFrame; // this is the frame after contours have been added.
             }
 
-            if(!(imgProcFlags->grayscaleOn || pChannels <= 2)) {
-                // Convert YCrCb image back to BGR
-                cvtColor(temp, temp, cv::COLOR_YCrCb2BGR);
-                temp.convertTo(temp, CV_8UC3, 255.0, 1.0/255.0);
-            }
-            else {
-                temp.convertTo(temp, CV_8UC1, 255.0, 1.0/255.0);
+            // save the very first contours frame
+            if (first) {
+                firstContours = temp;
+            } else {
+                temp = finalFrame - firstContours;
             }
 
-            // detect motion between input and prevFrame. on 2nd+ frame. Then set prevFrame to input.
-            // based upon https://towardsdatascience.com/image-analysis-for-beginners-creating-a-motion-detector-with-opencv-4ca6faba4b42
-            if (currentFrame > 0) {
-                newestMotion = temp;
 
-                // convert prevFrame
-                cvtColor(prevFrame, prevFrame, cv::COLOR_BGR2GRAY);
-                cv::GaussianBlur(prevFrame, prevFrame, cv::Size(5,5), 0, 0);
-                prevFrame.convertTo(prevFrame, CV_8UC1, 255.0, 1.0/255.0);
+            // Iterate through up to the desiredLongest largest contours.
+            int contoursSum = 0;
 
-                // convert newestMotion as a gray of output
-                cvtColor(temp, newestMotion, cv::COLOR_BGR2GRAY);
-                cv::GaussianBlur(newestMotion, newestMotion, cv::Size(5,5), 0, 0);
-
-                preparedFrame = prevFrame;
-
-                // Dif between previous, raw frame and newst output frame
-                cv::absdiff(prevFrame, newestMotion, preparedFrame);
-
-                cv::Mat one = cv::Mat::ones(2, 2, CV_8UC1);
-
-                cv::dilate(preparedFrame, preparedFrame, one, cv::Point(-1,-1), 1);
-
-                cv::Mat threshFrame;
-                cv::threshold(preparedFrame, threshFrame, 20, 255, cv::THRESH_BINARY); // 20, 255 are the thresholds.
-
-                bitwise_not(threshFrame, threshFrame); // invert image so foreground is white, background is black. (contours detct white on black)
-
-                // threshold frame honestly looks pretty good, if can find countours in that then do area from the tutorial, etc.
-                temp = threshFrame; // Set the output to threshold frame.
+            for (size_t i = 0; i < std::min(numContours, desiredLongest); i++) {
+                // Contours is a vector of contours(which are stored as point vectors)
+                vector<cv::Point> pont = contours[i]; // pont is a contour defined as a vector consistuing of multiple points.
+                int ySum = 0;
 
 
-                cvtColor(temp, temp, cv::COLOR_GRAY2BGR);
-    //            cv::imshow("BGR", output); // here it's white and black, looks pretty decent.
-
-                // TODO: things to improve detection:
-                // FIND CLUSTERS OF CONTOURS sthat move together and track them.
-                // maybe do morebluring for noise reduction? as in https://docs.opencv.org/3.4/da/d0c/tutorial_bounding_rects_circles.html
-                // maybe try Hull from OpenCV?
-
-                // contours approach
-                vector<vector<cv::Point>> contours;
-                cv::findContours(threshFrame, contours, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_TC89_L1);
-
-                // init finalFrame
-                cv::Mat finalFrame = cv::Mat::zeros(input.size().height, input.size().width, CV_8UC3);
-
-                // sort in descending from largest to smallest contour (based on contour area).
-                std::sort(contours.begin(), contours.end(), compareContoursArea);
-
-                int numContours = contours.size();
-
-                int desiredLongest = 50;
-                // draw contours on cv::Mat frame.
-                for (int i = 0; i < std::min(numContours, desiredLongest); i++) {
-                    cv::drawContours(finalFrame, contours, i, cv::Scalar(0,255,0), 2, cv::LINE_AA);
+                for (size_t j = 0; j < pont.size(); j++) {
+                    ySum += pont[j].y; // A y coord of one the the vector points.
+                    // use this if want to get minimum y-value.
+                    //                    if (pont[j].y < ySum) {
+                    //                        ySum = pont[j].y;
+                    //                    }
                 }
+                // avg y of this contour
+                ySum /= pont.size();
 
-                // Toggle between showing the contours or magnified image based on button
-                if (imgProcSettings->MagnifiedOrContours) {
-                    output = finalFrame; // this is the frame after contours have been added.
-                }
+                contoursSum += ySum;
+            }
 
-                // save the very first contours frame
-                if (first) {
-                    firstContours = temp;
-                } else {
-                    temp = finalFrame - firstContours;
-                }
+            // if only 7 contours, likely not breathing.
+            if (numContours <= 7) {
+                contoursSum = 0;
+            } else {
+                contoursSum = contoursSum / std::min(numContours, desiredLongest);
+            }
 
-
-                // Iterate through up to the desiredLongest largest contours.
-                int contoursSum = 0;
-
-                for (size_t i = 0; i < std::min(numContours, desiredLongest); i++) {
-                    // Contours is a vector of contours(which are stored as point vectors)
-                    vector<cv::Point> pont = contours[i]; // pont is a contour defined as a vector consistuing of multiple points.
-                    int ySum = 0;
+            //            cout << "Avg contours y-value: " << contoursSum << " # contours: " << std::min(numContours, desiredLongest) << " Contours. " << endl;
 
 
-                    for (size_t j = 0; j < pont.size(); j++) {
-                        ySum += pont[j].y; // A y coord of one the the vector points.
-                        // use this if want to get minimum y-value.
-    //                    if (pont[j].y < ySum) {
-    //                        ySum = pont[j].y;
-    //                    }
-                    }
-                    // avg y of this contour
-                    ySum /= pont.size();
-
-                    contoursSum += ySum;
-                }
-
-                // if only 7 contours, likely not breathing.
-                if (numContours <= 7) {
-                    contoursSum = 0;
-                } else {
-                    contoursSum = contoursSum / std::min(numContours, desiredLongest);
-                }
-
-    //            cout << "Avg contours y-value: " << contoursSum << " # contours: " << std::min(numContours, desiredLongest) << " Contours. " << endl;
-
-
-                // set initial prevavgcontourssum if first frame.
-                if (currentFrame == 0) {
-                    prevAvgContoursSum = contoursSum;
-    //                prevNumContours = numContours;
-                }
-
-                // Used by processing thread to write to shared mem.
-                breathMeasureOutput = contoursSum;
-
+            // set initial prevavgcontourssum if first frame.
+            if (currentFrame == 0) {
                 prevAvgContoursSum = contoursSum;
-
-
-    // Example of adding text to the output video shown in the program.
-    //            std::string txt;
-    //            txt = "TEST. " + std::to_string(contoursSum) ;
-    //            cv::putText(output, //target image
-    //                        txt, //text
-    //                        cv::Point(10, output.rows / 3), //top-left position
-    //                        cv::FONT_HERSHEY_DUPLEX,
-    //                        1.0,
-    //                        CV_RGB(118, 185, 0), //font color
-    //                        2);
-                prevFrame = input;
+                //                prevNumContours = numContours;
             }
+
+            // Used by processing thread to write to shared mem.
+            breathMeasureOutput = contoursSum;
+
+            prevAvgContoursSum = contoursSum;
+
+
+            // Example of adding text to the output video shown in the program.
+            //            std::string txt;
+            //            txt = "TEST. " + std::to_string(contoursSum) ;
+            //            cv::putText(output, //target image
+            //                        txt, //text
+            //                        cv::Point(10, output.rows / 3), //top-left position
+            //                        cv::FONT_HERSHEY_DUPLEX,
+            //                        1.0,
+            //                        CV_RGB(118, 185, 0), //font color
+            //                        2);
+            prevFrame = input;
+        }
 
         // Fill internal buffer with magnified image
         magnifiedBuffer.push_back(output);
@@ -508,12 +510,12 @@ void Magnificator::rieszMagnify()
             // 3. BANDPASS FILTER ON EACH LEVEL
             for (int lvl = 0; lvl < curPyr->numLevels-1; ++lvl) {
                 loCutoff->pass(curPyr->pyrLevels[lvl].itsImagPass,
-                              curPyr->pyrLevels[lvl].itsPhase,
-                              oldPyr->pyrLevels[lvl].itsPhase);
+                               curPyr->pyrLevels[lvl].itsPhase,
+                               oldPyr->pyrLevels[lvl].itsPhase);
 
                 hiCutoff->pass(curPyr->pyrLevels[lvl].itsRealPass,
-                              curPyr->pyrLevels[lvl].itsPhase,
-                              oldPyr->pyrLevels[lvl].itsPhase);
+                               curPyr->pyrLevels[lvl].itsPhase,
+                               oldPyr->pyrLevels[lvl].itsPhase);
             }
             // Shift current to prior for next iteration
             *oldPyr = *curPyr;
