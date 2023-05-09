@@ -87,7 +87,7 @@ See link at the top or read orignal_README.md for more details.
 <details open>
 <summary> Building OpenCV from source (open for detail)</summary>
 <br>
-Follow [this tutorial](https://wiki.qt.io/How_to_setup_Qt_and_openCV_on_Windows/)
+Follow [this tutorial](https://wiki.qt.io/How_to_setup_Qt_and_openCV_on_Windows)
 
 [Video](https://www.youtube.com/watch?v=_fqpYLM6SCw) for more details- not an exact tutorial but close. Be sure to also select the parameters mentioned in the qt.io tutorial above. 
 
