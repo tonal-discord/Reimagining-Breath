@@ -3,7 +3,7 @@ See link above or read orignal_README.md for details, it's pretty thorough.
 
 ## Using the program
 TLDR:
-1. Open rvm.exe (or Linux version)
+1. Open rvm.exe <(or Linux version)>
 2. Press "OK" or change options if you desire
 3. Switch magnification type box to "Laplace"
 4. The "CSV output" checkbox outputs the breath values to a CSV file called "out.csv" in the same directory as the executable when checked. The file will not delete or clear itself.
@@ -97,6 +97,7 @@ If you installed Python through the windows store, you will probably be missing 
 
 
 ## Developing on Linux (Fedora Workstation 37)
+<<<<<<< HEAD
 1. Install opencv, gcc-c++, GL stuff: `sudo dnf install opencv opencv-devel gcc-c++ glew-devel SDL2-devel SDL2_image-devel glm-devel freetype-devel`
 2. Install Qt Creator (you will have to make an account) [here](https://www.qt.io/download-qt-installer-oss) 
 3. You may have to edit the kits, manually set the C++ compiler to your GCC path.
@@ -108,6 +109,9 @@ You can make a fedora virtual machine to try it out. Not sure if/how you can pas
 2. Once installed, run this command in the terminal: `dnf install -y opencv qtcreator`
 3. Copy the program into the virtual machine, run `./build-rvm-Desktop-Debug/rvm` and the program should work
 4. You can also open qtcreator in the virual machine and run the program through that.
+=======
+- see linux branch. The program doesn't work quite right on Linux, needs more development.
+>>>>>>> origin/main
 
 ### Dependencies:
 These versions were used during development:

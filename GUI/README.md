@@ -5,7 +5,7 @@
 Note: cursor doesn't work on Linux. Use linux branch or edit line 89 to `self.window.configure(bg="black")`.
 
 ### About
-- Play() function starts on line 193 (for video speed/direction)
+- Play() function starts on line 252 (for video speed/direction)
 - other files: thumbnails, videos folders, and cursor_20t.cur file. 
 - To use a Joy-Con with it: connect a right joycon via Bluetooth to your computer, then you'll also need the `joycon.py` file, 
 
