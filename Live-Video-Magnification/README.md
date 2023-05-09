@@ -1,5 +1,5 @@
 ## [Live Video Magnification](https://github.com/tschnz/Live-Video-Magnification)
-See README in main branch for more details
+See README on main branch for more details
 
 
 
@@ -10,7 +10,7 @@ See README in main branch for more details
 4. In Qt Creator, open a new project and select `./src/rvm.pro`
 
 ## Other distributions
-Was not able to get the necessary opencv modules installed and linked properly on Ubuntu 20.04.6 (yet). If  you wish to attempt this, [here](https://docs.opencv.org/4.x/d7/d9f/tutorial_linux_install.html) is a tutorial. You will need to build with opencv_contrib.
+Was not able to get the necessary opencv modules installed and linked properly on Ubuntu 20.04.6 (yet). If  you wish to attempt this, [here](https://docs.opencv.org/4.x/d7/d9f/tutorial_linux_install.html) is a tutorial. You will need to build with opencv_contrib. You can use `cmake-gui` andThis guide is somewhat useful still. https://wiki.qt.io/How_to_setup_Qt_and_openCV_on_Windows
 ### Future improvements:
 - Check out [linuxdeployqt](https://github.com/probonopd/linuxdeployqt) to create an AppImage that in theory should work easily on all distributions
 	- Wasn't able to build on Fedora due to glibc being too new.
