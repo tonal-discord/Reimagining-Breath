@@ -3,11 +3,13 @@ See link above or read orignal_README.md for details, it's pretty thorough.
 
 ## Using the program
 TLDR:
-1. Open rvm.exe <(or Linux version)>
-2. Press "OK" or change options if you desire
-3. Switch magnification type box to "Laplace"
-4. The "CSV output" checkbox outputs the breath values to a CSV file called "out.csv" in the same directory as the executable when checked. The file will not delete or clear itself.
-5. The "Toggle magnified view" button switches the preview from magnified motion to the contours which are used to track (motion) breathing
+1. Download the [release](https://github.com/kujaw077/senior-design-project/releases/download/v1.0.0/Re-Imagining.Breath.v1.0.0.zip)(also shown on right side under "Releases")
+2. Extract
+3. Open rvm.exe
+4. Press "OK" or change options if you desire
+5. Switch magnification type box to "Laplace"
+6. The "CSV output" checkbox outputs the breath values to a CSV file called "out.csv" in the same directory as the executable when checked. The file will not delete or clear itself.
+7. The "Toggle magnified view" button switches the preview from magnified motion to the contours which are used to track (motion) breathing
 
 
 The following is taken from the program's original source found at link above.
@@ -97,7 +99,7 @@ If you installed Python through the windows store, you will probably be missing 
 
 
 ## Developing on Linux (Fedora Workstation 37)
-- see linux branch. The program doesn't work quite right on Linux, needs more development.
+- see linux branch. 
 
 ### Dependencies:
 These versions were used during development:
